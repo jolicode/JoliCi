@@ -1,0 +1,13 @@
+# IDE
+.build_dir
+.externalTollBuilders
+.settings
+.project
+.buildpath
+
+# Dependencies
+vendor
+
+# Bin
+pharcc.phar
+jolici.phar

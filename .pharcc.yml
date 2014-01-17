@@ -1,0 +1,10 @@
+name: jolici.phar
+main: bin/jolici
+include:
+  - src/
+  - vendor/
+exclude:
+  - "/[Tt]ests?/"
+  - "/docs?/"
+  - "^vendor/phpunit"
+  - "^vendor/bin"
