@@ -33,16 +33,9 @@ use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 class RunCommand extends Command
 {
     /**
-     * @var string Base path for ressources
+     * @var Silex\Application
      */
-    private $resourcesPath;
-
-    public function __construct($ressourcesPath)
-    {
-        parent::__construct();
-
-        $this->resourcesPath = $ressourcesPath;
-    }
+    private $silexApplication;
 
     /**
      * Configures the current command.
@@ -58,16 +51,16 @@ class RunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $quietBuild       = !(OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
-        $tmpDir           = sys_get_temp_dir().DIRECTORY_SEPARATOR."jolici-builds";
-        $logger           = new Logger("standalone-logger");
-        $joliciStrategy   = new JoliCiBuildStrategy($tmpDir);
-        $travisCiStrategy = new TravisCiBuildStrategy($tmpDir, $this->resourcesPath.DIRECTORY_SEPARATOR."travisci");
-        $docker           = new Docker(new Client($input->getOption('docker-host')));
-        $executor         = new Executor($logger, $docker, !$input->getOption('no-cache'), $quietBuild);
-        $filesystem       = new Filesystem();
-        $handler          = new StreamHandler("php://stdout");
-        $builder          = new Builder();
+        $quietBuild     = !(OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
+        $tmpDir         = sys_get_temp_dir().DIRECTORY_SEPARATOR."jolici-builds";
+        $logger         = new Logger("standalone-logger");
+        $joliciStrategy = new JoliCiBuildStrategy($tmpDir);
+        $travisCiStrategy = new TravisCiBuildStrategy($tmpDir);
+        $docker         = new Docker(new Client($input->getOption('docker-host')));
+        $executor       = new Executor($logger, $docker, !$input->getOption('no-cache'), $quietBuild);
+        $filesystem     = new Filesystem();
+        $handler        = new StreamHandler("php://stdout");
+        $builder        = new Builder();
 
         $handler->setFormatter(new SimpleFormatter());
         $builder->pushStrategy($joliciStrategy);

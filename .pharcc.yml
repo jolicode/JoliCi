@@ -3,6 +3,7 @@ main: bin/jolici
 include:
   - src/
   - vendor/
+  - resources/
 exclude:
   - "/[Tt]ests?/"
   - "/docs?/"
