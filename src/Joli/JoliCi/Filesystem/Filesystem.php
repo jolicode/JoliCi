@@ -14,12 +14,19 @@ use Symfony\Component\Filesystem\Filesystem as BaseFilesystem;
 
 class Filesystem extends BaseFilesystem
 {
+    /**
+     * Recursive copy
+     *
+     * @param string  $originFile Original file or directory
+     * @param string  $targetFile Target file or directory
+     * @param boolean $override   Does it override existing file ?
+     */
     public function rcopy($originFile, $targetFile, $override = false)
     {
         $cwd = getcwd();
 
         if (!is_dir($originFile)) {
-            return $this->copy($originFile, $targetFile, $override);
+            $this->copy($originFile, $targetFile, $override);
         }
 
         $directory = opendir($originFile);
@@ -50,5 +57,17 @@ class Filesystem extends BaseFilesystem
         }
 
         closedir($directory);
+    }
+
+    /**
+     * Add keeping same permissions as origin file
+     *
+     * @see \Symfony\Component\Filesystem\Filesystem::copy()
+     */
+    public function copy($originFile, $targetFile, $override = false)
+    {
+        parent::copy($originFile, $targetFile, $override);
+
+        $this->chmod($targetFile, fileperms($originFile));
     }
 }
