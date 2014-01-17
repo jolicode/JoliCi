@@ -15,6 +15,6 @@ RUN apt-get install -y php5-cli git
 
 ADD . /jolici
 
-RUN cd /jolici && php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));" && php composer.phar install --dev
+RUN cd /jolici && php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));" && php composer.phar install --dev --prefer-source
 
 CMD cd /jolici && php vendor/bin/phpunit
