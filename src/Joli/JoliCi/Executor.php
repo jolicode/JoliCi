@@ -56,7 +56,6 @@ class Executor
      *
      * @param unknown $directory           Directory where the project to build is
      * @param unknown $dockername          Name of the docker image to create
-     * @param unknown $extraLogInformation Extra log informations to pass
      */
     public function runBuild($directory, $dockername)
     {
@@ -125,7 +124,6 @@ class Executor
      * Run default command for container
      *
      * @param string $dockername          Name of docker image
-     * @param array  $extraLogInformation Extra information to add to log
      *
      * @return Container return the container executed
      */

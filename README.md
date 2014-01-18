@@ -1,7 +1,7 @@
 # JoliCi
 
 JoliCi is a free and open source Continuous Integration Client written in PHP and propulsed by Docker. It has been written to be easy to use.
-Thanks to the use of Docker, all kind of projects can be tested with this CI (not just PHP) : you are completly free.
+Thanks to the use of Docker, all kind of projects can be tested with this CI (not just PHP) : you are completely free.
 
 **This project is still in beta, there may be bugs and missing features**
 

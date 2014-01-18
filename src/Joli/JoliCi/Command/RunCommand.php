@@ -33,15 +33,15 @@ use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 class RunCommand extends Command
 {
     /**
-     * @var string Base path for ressources
+     * @var string Base path for resources
      */
     private $resourcesPath;
 
-    public function __construct($ressourcesPath)
+    public function __construct($resourcesPath)
     {
         parent::__construct();
 
-        $this->resourcesPath = $ressourcesPath;
+        $this->resourcesPath = $resourcesPath;
     }
 
     /**
@@ -74,7 +74,7 @@ class RunCommand extends Command
         $builder->pushStrategy($travisCiStrategy);
         $logger->pushHandler($handler);
 
-        $output->writeln("<info>Creatings builds...</info>");
+        $output->writeln("<info>Creating builds...</info>");
         $builds = $builder->createBuilds($input->getOption("project-path"));
         $output->writeln(sprintf("<info>%s builds created</info>", count($builds)));
 
