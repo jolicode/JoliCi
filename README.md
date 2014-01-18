@@ -60,7 +60,7 @@ Thank you!
 * Some parts of this project are inspired by :
 	* [Docker Client](https://github.com/dotcloud/docker/blob/master/commands.go)
 * This README is heavily inspired by a @willdurand [blog post](http://williamdurand.fr/2013/07/04/on-open-sourcing-libraries/).
-* [@ubermeda](https://github.com/ubermuda) for accepting many pull requests on [docker-php](https://github.com/stage1/docker-php) library
+* [@ubermuda](https://github.com/ubermuda) for accepting many pull requests on [docker-php](https://github.com/stage1/docker-php) library
 
 ## Licence
 
