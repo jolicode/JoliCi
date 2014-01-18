@@ -64,60 +64,59 @@ class Executor
         //Run build
         $context  = new Context($directory);
         $response = $this->docker->build($context, $dockername, $this->quietBuild, $this->usecache);
+        $error    = false;
 
-        if ($this->quietBuild) {
-            $response->read();
-        } else {
-            $response->read(function ($output) use ($logger, $response) {
-                $static    = false;
-                $staticId  = null;
-                $error     = false;
-                $needClean = false;
+        $response->read(function ($output) use ($logger, $response, &$error) {
+            $static    = false;
+            $staticId  = null;
+            $needClean = false;
 
-                if ($response->headers->get('Content-Type') == 'application/json') {
-                    $output  = json_decode($output, true);
-                    $message = "";
-                    if (isset($output['stream'])) {
-                        $message = $output['stream'];
-                    }
-
-                    if (isset($output['status'])) {
-                        $message .= " ".$output['status'];
-                        $needClean = true;
-                    }
-
-                    //Handle "static" messages
-                    if (isset($output['id'])) {
-                        $static    = true;
-                        $staticId  = $output['id'];
-                        $needClean = true;
-                    }
-
-                    //Only get progress message (but current, total, and start size may be available under progressDetail)
-                    if (isset($output['progress'])) {
-                        $message .= " ".$output['progress'];
-                        $needClean = true;
-                    }
-
-                    if (isset($output['err'])) {
-                        //#TODO Deal with error
-                    }
-                } else {
-                    $message = $output;
+            if ($response->headers->get('Content-Type') == 'application/json') {
+                $output  = json_decode($output, true);
+                $message = "";
+                if (isset($output['stream'])) {
+                    $message = $output['stream'];
                 }
 
-                //remove whitespace and other characters and force a clean message only when needed
-                if ($needClean) {
-                    $message = trim($message)."\n";
+                if (isset($output['status'])) {
+                    $message .= " ".$output['status'];
+                    $needClean = true;
                 }
 
-                if (!$error) {
-                    $logger->addInfo($message, array('static' => $static, 'static-id' => $staticId));
-                } else {
-                    $logger->addError($message, array('static' => $static, 'static-id' => $staticId));
+                //Handle "static" messages
+                if (isset($output['id'])) {
+                    $static    = true;
+                    $staticId  = $output['id'];
+                    $needClean = true;
                 }
-            });
-        }
+
+                //Only get progress message (but current, total, and start size may be available under progressDetail)
+                if (isset($output['progress'])) {
+                    $message .= " ".$output['progress'];
+                    $needClean = true;
+                }
+
+                if (isset($output['error'])) {
+                    $error = true;
+                    $message = $output['error']."\n";
+                }
+            } else {
+                $message = $output;
+            }
+
+            //remove whitespace and other characters and force a clean message only when needed
+            if ($needClean) {
+                $message = trim($message)."\n";
+            }
+
+            if (!$error) {
+                $logger->addInfo($message, array('static' => $static, 'static-id' => $staticId));
+            } else {
+                $logger->addError($message, array('static' => $static, 'static-id' => $staticId));
+            }
+        });
+
+        return !$error;
     }
 
     /**

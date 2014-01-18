@@ -66,7 +66,7 @@ class RunCommand extends Command
         $docker           = new Docker(new Client($input->getOption('docker-host')));
         $executor         = new Executor($logger, $docker, !$input->getOption('no-cache'), $quietBuild);
         $filesystem       = new Filesystem();
-        $handler          = new StreamHandler("php://stdout");
+        $handler          = new StreamHandler("php://stdout", $quietBuild ? Logger::ERROR : Logger::INFO);
         $builder          = new Builder();
 
         $handler->setFormatter(new SimpleFormatter());
@@ -80,8 +80,10 @@ class RunCommand extends Command
 
         foreach ($builds as $build) {
             $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getName()));
-            $executor->runBuild($build->getDirectory(), $build->getDockerName());
-            $executor->runTest($build->getDockerName());
+
+            if ($executor->runBuild($build->getDirectory(), $build->getDockerName())) {
+                $executor->runTest($build->getDockerName());
+            }
 
             $filesystem->remove($build->getDirectory());
         }
