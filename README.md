@@ -5,7 +5,7 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 **This project is still in beta, there may be bugs and missing features**
 
-[![Build Status](https://travis-ci.org/jolicode/JoliCi.png?branch=master)](https://travis-ci.org/jolicode/JoliCi)
+[![Build Status](https://travis-ci.org/jolicode/JoliCi.png?branch=master)](https://travis-ci.org/jolicode/JoliCi) [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/jolicode/JoliCi/badges/quality-score.png?s=1ba180546468c07ca8fc0996dcdc4a740dcf23fc)](https://scrutinizer-ci.com/g/jolicode/JoliCi/)
 
 ## Features
 
