@@ -14,6 +14,7 @@ RUN apt-get update
 RUN apt-get install -y php5-cli git
 
 ADD . /jolici
+WORKDIR /jolici
 
 RUN cd /jolici && php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));" && php composer.phar install --dev --prefer-source
 

@@ -112,7 +112,7 @@ class Executor
             }
 
             if (!$error) {
-                $logger->addInfo($message, array('static' => $static, 'static-id' => $staticId));
+                $logger->addDebug($message, array('static' => $static, 'static-id' => $staticId));
             } else {
                 $logger->addError($message, array('static' => $static, 'static-id' => $staticId));
             }
@@ -124,19 +124,27 @@ class Executor
     /**
      * Run default command for container
      *
-     * @param string $dockername          Name of docker image
+     * @param string        $dockername  Name of docker image
+     * @param string|array  $cmdOverride Override default command with this one
      *
      * @return Container return the container executed
      */
-    public function runTest($dockername)
+    public function runTest($dockername, $cmdOverride = array())
     {
         $logger = $this->logger;
 
         //Execute test
+        $config = array();
         $image = new Image();
         $image->setRepository($dockername);
 
-        $container = new Container();
+        if (is_string($cmdOverride)) {
+            $cmdOverride = array('/bin/bash', '-c', $cmdOverride);
+        }
+
+        $config['Cmd'] = $cmdOverride;
+
+        $container = new Container($config);
         $container->setImage($image);
 
         $this->docker->getContainerManager()->run($container)->attach($container, function ($type, $content) use ($logger) {

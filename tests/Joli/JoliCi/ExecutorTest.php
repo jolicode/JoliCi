@@ -93,4 +93,56 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey("Image", $config);
         $this->assertEquals("test", $config["Image"]);
     }
+
+public function testRunTestWithCmdOverride()
+    {
+        $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
+
+        $this->docker->expects($this->once())
+            ->method('getContainerManager')
+            ->will($this->returnValue($containerManager));
+
+        $containerManager->expects($this->any())
+            ->method('run')
+            ->will($this->returnSelf());
+        $containerManager->expects($this->any())
+            ->method('attach')
+            ->will($this->returnSelf());
+        $containerManager->expects($this->any())
+            ->method('wait')
+            ->will($this->returnSelf());
+
+        $container = $this->executor->runTest("test", array("phpunit"));
+
+        $config = $container->getConfig();
+
+        $this->assertArrayHasKey("Cmd", $config);
+        $this->assertEquals(array("phpunit"), $config["Cmd"]);
+    }
+
+    public function testRunTestWithCmdOverrideAsString()
+    {
+        $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
+
+        $this->docker->expects($this->once())
+            ->method('getContainerManager')
+            ->will($this->returnValue($containerManager));
+
+        $containerManager->expects($this->any())
+            ->method('run')
+            ->will($this->returnSelf());
+        $containerManager->expects($this->any())
+            ->method('attach')
+            ->will($this->returnSelf());
+        $containerManager->expects($this->any())
+            ->method('wait')
+            ->will($this->returnSelf());
+
+        $container = $this->executor->runTest("test", "phpunit");
+
+        $config = $container->getConfig();
+
+        $this->assertArrayHasKey("Cmd", $config);
+        $this->assertEquals(array("/bin/bash", "-c", "phpunit"), $config["Cmd"]);
+    }
 }

@@ -54,6 +54,7 @@ class RunCommand extends Command
         $this->addOption('project-path', 'p', InputOption::VALUE_OPTIONAL, "Path where you project is", ".");
         $this->addOption('no-cache', null, InputOption::VALUE_NONE, "Do not use cache of docker");
         $this->addOption('docker-host', null, InputOption::VALUE_OPTIONAL, "Docker server location", "unix:///var/run/docker.sock");
+        $this->addArgument('cmd', InputArgument::OPTIONAL, "Override test command");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -66,7 +67,7 @@ class RunCommand extends Command
         $docker           = new Docker(new Client($input->getOption('docker-host')));
         $executor         = new Executor($logger, $docker, !$input->getOption('no-cache'), $quietBuild);
         $filesystem       = new Filesystem();
-        $handler          = new StreamHandler("php://stdout", $quietBuild ? Logger::ERROR : Logger::INFO);
+        $handler          = new StreamHandler("php://stdout", $quietBuild ? Logger::INFO : Logger::DEBUG);
         $builder          = new Builder();
 
         $handler->setFormatter(new SimpleFormatter());
@@ -82,7 +83,7 @@ class RunCommand extends Command
             $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getName()));
 
             if ($executor->runBuild($build->getDirectory(), $build->getDockerName())) {
-                $executor->runTest($build->getDockerName());
+                $executor->runTest($build->getDockerName(), $input->getArgument('cmd'));
             }
 
             $filesystem->remove($build->getDirectory());
