@@ -12,7 +12,7 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 ## Usage
 
-* Download `jolici.phar`
+* [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.1.0/jolici.phar)
 * Run it under your project `php jolici.phar run`
 
 ## Strategies
