@@ -12,14 +12,11 @@ namespace Joli\JoliCi\Command;
 
 use Docker\Docker;
 use Docker\Http\Client;
-
 use Joli\JoliCi\Executor;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
 use Joli\JoliCi\Log\SimpleFormatter;
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

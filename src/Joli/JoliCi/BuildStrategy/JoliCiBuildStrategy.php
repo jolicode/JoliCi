@@ -12,7 +12,6 @@ namespace Joli\JoliCi\BuildStrategy;
 
 use Joli\JoliCi\Build;
 use Joli\JoliCi\Filesystem\Filesystem;
-
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -34,6 +33,9 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
      */
     private $filesystem;
 
+    /**
+     * @param string $buildPath
+     */
     public function __construct($buildPath, Filesystem $filesystem = null)
     {
         $this->buildPath  = $buildPath;

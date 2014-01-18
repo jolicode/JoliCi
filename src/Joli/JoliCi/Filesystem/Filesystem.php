@@ -63,6 +63,8 @@ class Filesystem extends BaseFilesystem
      * Add keeping same permissions as origin file
      *
      * @see \Symfony\Component\Filesystem\Filesystem::copy()
+     * @param string $originFile
+     * @param string $targetFile
      */
     public function copy($originFile, $targetFile, $override = false)
     {

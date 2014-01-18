@@ -27,6 +27,9 @@ class Build
      */
     protected $dockername;
 
+    /**
+     * @param string $directory
+     */
     public function __construct($name, $directory)
     {
         $this->name       = $name;
