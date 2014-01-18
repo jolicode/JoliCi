@@ -1,6 +1,6 @@
 <?php
 
-namespace Joli\JoliCi;
+namespace Joli\JoliCi\BuildStrategy;
 
 use org\bovigo\vfs\vfsStream;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
@@ -10,7 +10,7 @@ class TravisCiBuildStrategyTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->buildPath = vfsStream::setup('build-path');
-        $this->strategy = new TravisCiBuildStrategy(vfsStream::url('build-path'));
+        $this->strategy = new TravisCiBuildStrategy(vfsStream::url('build-path'), __DIR__."/../../../../resources/travisci");
     }
 
     public function testSupportTrue()
