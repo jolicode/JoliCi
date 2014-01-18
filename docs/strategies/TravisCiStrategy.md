@@ -4,7 +4,7 @@ This strategy parse the .travis.yml file at the root of your project to create D
 
 ## Language and version support
 
-For the moment only the following language / version list is supported, objectif is to support what travis support:
+For the moment only the following language / version list is supported, goal is to support what travis support:
 
 * php
 	* 5.3

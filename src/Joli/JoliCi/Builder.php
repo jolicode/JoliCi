@@ -36,7 +36,7 @@ class Builder
         $builds = array();
 
         foreach ($this->strategies as $strategy) {
-            //For each stratgies working with this project
+            //For each strategies working with this project
             if ($strategy->supportProject($directory)) {
                 //We get builds
                 $builds += $strategy->createBuilds($directory);

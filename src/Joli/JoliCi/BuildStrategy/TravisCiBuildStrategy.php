@@ -35,7 +35,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private $buildPath;
 
     /**
-     * @var string Base path for travisci ressources
+     * @var string Base path for travisci resources
      */
     private $resourcesPath;
 

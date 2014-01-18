@@ -67,7 +67,7 @@ class RunCommand extends Command
         $builder->pushStrategy($travisCiStrategy);
         $logger->pushHandler($handler);
 
-        $output->writeln("<info>Creatings builds...</info>");
+        $output->writeln("<info>Creating builds...</info>");
         $builds = $builder->createBuilds($input->getOption("project-path"));
         $output->writeln(sprintf("<info>%s builds created</info>", count($builds)));
 
