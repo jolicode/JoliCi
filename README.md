@@ -15,6 +15,15 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 * [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.1.0/jolici.phar)
 * Run it under your project `php jolici.phar run`
 
+First run can actually be quiet long since it has to build everything from the beginning, but subsequent buil should be much faster thanks to docker caching.
+
+### Run options
+
+* --project-path : Path where your project is, default to current directory
+* --docker-host : Set the API entrypoint for Docker
+* -v|-vv|-vvv : Verbose, more verbose and very verbose, by default it only show the test command. By increasing verbosity you will also see the build output
+* --no-cache : Do not use docker cache when building image
+
 ## Strategies
 
 JoliCi need to know how to create builds from your project a.k.a. `BuildStrategy`. 
