@@ -1,8 +1,9 @@
 {
     "name": "jolicode/jolici",
-    "description": "A continuous integration client propulsed by Docker",
-    "type": "project",
+    "description": "Run your tests on your local computer on different application stack",
+    "type": "library",
     "license": "MIT",
+    "keywords": ["test", "ci", "travisci", "docker", "continuous", "integration"],
     "require" : {
         "php" : ">=5.3",
         "symfony/console" : "~2.4",
