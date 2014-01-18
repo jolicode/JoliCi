@@ -56,6 +56,8 @@ class Executor
      *
      * @param unknown $directory           Directory where the project to build is
      * @param unknown $dockername          Name of the docker image to create
+     *
+     * @return boolean Return true on build success, false otherwise
      */
     public function runBuild($directory, $dockername)
     {

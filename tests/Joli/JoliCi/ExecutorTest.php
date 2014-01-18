@@ -24,7 +24,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $response->expects($this->once())
             ->method('read')
-            ->with($this->isNull());
+            ->with($this->isType('callable'));
 
         $executor->runBuild("/test", "test");
     }
@@ -41,7 +41,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $response->expects($this->once())
             ->method('read')
-            ->with($this->isNull());
+            ->with($this->isType('callable'));
 
         $executor->runBuild("/test", "test");
     }
