@@ -4,6 +4,13 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["test", "ci", "travisci", "docker", "continuous", "integration"],
+    "authors": [
+        {
+            "name": "Joel Wurtz",
+            "email": "jwurtz@jolicode.com",
+            "homepage": "https://twitter.com/JoelWurtz"
+        }
+    ],
     "require" : {
         "php" : ">=5.3",
         "symfony/console" : "~2.4",
