@@ -12,23 +12,21 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 ## Usage
 
+* Download `jolici.phar`
+* Run it under your project `php jolici.phar run`
+
+## Strategies
+
 JoliCi need to know how to create builds from your project a.k.a. `BuildStrategy`. 
 
-For the moment, only [JoliCiBuildStrategy](docs/strategies/JoliCiStrategy.md) is supported, but more strategy (like reading a .travis.yml file) will be supported in the future.
+For the moment, only [TravisCiBuildStrategy](docs/strategies/TravisCiStrategy.md) and [JoliCiBuildStrategy](docs/strategies/JoliCiStrategy.md) are supported, but more strategy (like reading a circle.yml file) will be supported in the future.
 
 This strategies are determined by reading your project directory.
 
-## Installation
-
-### Requirements
+## Requirements
 
 * [Docker](http://docker.io) (a recent version is better and encouraged)
 * PHP 5.4 at least
-
-### Instructions
-
-* Download `jolici.phar`
-* Run it under your project `php jolici.phar run`
 
 ## Contributing
 
