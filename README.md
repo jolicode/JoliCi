@@ -5,9 +5,11 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 **This project is still in beta, there may be bugs and missing features**
 
+[![Build Status](https://travis-ci.org/jolicode/JoliCi.png?branch=master)](https://travis-ci.org/jolicode/JoliCi)
+
 ## Features
 
-* Secured and isolated build
+* Secured and isolated build on your local computer
 * Multiple builds by project
 * Support `.travis.yml` file
 
