@@ -8,14 +8,15 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 ## Features
 
 * Secured and isolated build
-* Multiple diffrents builds by project
+* Multiple builds by project
+* Support `.travis.yml` file
 
 ## Usage
 
 * [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.1.0/jolici.phar)
 * Run it under your project `php jolici.phar run`
 
-First run can actually be quiet long since it has to build everything from the beginning, but subsequent buil should be much faster thanks to docker caching.
+First run can be quite long since it has to build everything from the beginning. Subsequent build should be faster thanks to docker caching.
 
 ### Run options
 
