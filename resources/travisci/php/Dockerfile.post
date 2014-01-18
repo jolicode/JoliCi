@@ -1,0 +1,13 @@
+# Install deps
+RUN apt-get install -y php5-dev php5-cli php5-curl php-apc php5-mysql php5-intl php5-xdebug php5-mcrypt php5-pgsql php5-sqlite php-pear
+
+# Making fake for phpenv
+RUN echo "#|/bin/bash\necho php" >> /usr/local/bin/phpenv && chmod +x /usr/local/bin/phpenv
+RUN mkdir -p ~/.phpenv/versions/php
+RUN ln -s /etc/php5 ~/.phpenv/versions/php/etc
+
+RUN ls -l ~/.phpenv/versions/php/etc/conf.d
+
+# Add project at the end
+ADD .   /project
+WORKDIR /project

@@ -25,12 +25,8 @@ use Symfony\Component\Yaml\Yaml;
  */
 class TravisCiBuildStrategy implements BuildStrategyInterface
 {
-    private $mapping = array(
-        'php' => array(
-            '5.3' => 'Dockerfile.php53',
-            '5.4' => 'Dockerfile.php54',
-            '5.5' => 'Dockerfile.php55',
-        )
+    private $defaultTestCommand = array(
+        'php' => 'phpunit'
     );
 
     /**
@@ -67,13 +63,24 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $additionalRunContent = $this->parseBeforeScript($config);
         $cmdContent           = $this->parseScript($config);
         $buildRoot            = $this->buildPath.DIRECTORY_SEPARATOR.uniqid();
+        $commonContent        = file_get_contents($this->resourcesPath."/Dockerfile");
 
-        if (isset($config[$language])) {
+        if (isset($config[$language]) && file_exists($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.pre")) {
+            $languageContentPre  = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.pre");
+            $languageContentPost = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.post");
+
             foreach ($config[$language] as $version) {
-                if (isset($this->mapping[$language][(string)$version])) {
-                    $dockerfile        = $this->mapping[$language][(string)$version];
-                    $dockerFileContent = file_get_contents($this->resourcesPath."/".$dockerfile);
-                    $dockerFileContent = sprintf("%s\n%s\n%s", $dockerFileContent, $additionalRunContent, $cmdContent);
+                if (file_exists($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR."Dockerfile")) {
+                    $versionContent = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR."Dockerfile");
+
+                    $dockerFileContent = sprintf("%s\n%s\n%s\n%s\n%s\n%s",
+                        $commonContent,
+                        $languageContentPre,
+                        $versionContent,
+                        $languageContentPost,
+                        $additionalRunContent,
+                        $cmdContent
+                    );
 
                     $buildName = sprintf("%s-%s", $language, $version);
                     $buildDir  = $buildRoot.DIRECTORY_SEPARATOR.$buildName;
@@ -122,9 +129,12 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         }
 
         if (is_array($config['before_script'])) {
+            $config['before_script'] = array_map(function ($value) {
+                return sprintf("(%s || echo -n '')", $value);
+            }, $config['before_script']);
             return sprintf("RUN cd /project && %s", implode(" && ", $config['before_script']));
         } else {
-            return sprintf("RUN cd /project && %s", $config['before_script']);
+            return sprintf("RUN cd /project && (%s || exit 0)", $config['before_script']);
         }
     }
 
@@ -138,7 +148,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private function parseScript($config)
     {
         if (!isset($config['script'])) {
-            return "CMD ls -l";
+            return sprintf("CMD %s", $this->defaultTestCommand[$config['language']]);
         }
 
         if (is_array($config['script'])) {

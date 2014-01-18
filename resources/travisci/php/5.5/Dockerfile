@@ -1,0 +1,1 @@
+RUN add-apt-repository ppa:ondrej/php5 && apt-get update

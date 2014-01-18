@@ -1,22 +1,12 @@
 FROM ubuntu
 MAINTAINER Joel Wurtz <jwurtz@jolicode.com>
 
+# Add apt repository needed
 RUN echo 'deb http://archive.ubuntu.com/ubuntu precise main universe' > /etc/apt/sources.list
 RUN echo 'deb http://archive.ubuntu.com/ubuntu precise-security main universe' >> /etc/apt/sources.list
 RUN echo 'deb http://archive.ubuntu.com/ubuntu precise-updates main universe' >> /etc/apt/sources.list
 RUN echo 'deb http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse' >> /etc/apt/sources.list
+RUN apt-get update && apt-get install -y python-software-properties && add-apt-repository ppa:pdoes/ppa && apt-get update
 
-RUN apt-get update
-
-# Install deps
-RUN apt-get install -y php5-cli php5-curl php-apc php5-mysql php5-intl git sudo curl wget
-
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin && mv /usr/bin/composer.phar /usr/bin/composer && chmod +x /usr/bin/composer
-
-# Install PHPUnit
-RUN wget https://phar.phpunit.de/phpunit.phar && chmod +x phpunit.phar && mv phpunit.phar /usr/bin/phpunit
-
-ADD . /project
-
-WORKDIR /project
+# Common for all
+RUN apt-get install -y subversion mercurial build-essential openssl rsync git sudo curl wget golang-go

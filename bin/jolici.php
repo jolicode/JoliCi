@@ -12,6 +12,6 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 }
 
 $application = new Application('jolici');
-$application->add(new RunCommand());
+$application->add(new RunCommand(__DIR__.'/../resources'));
 
 $application->run();
