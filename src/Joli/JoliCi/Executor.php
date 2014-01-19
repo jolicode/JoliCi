@@ -43,12 +43,18 @@ class Executor
      */
     private $quietBuild = true;
 
-    public function __construct(Logger $logger, Docker $docker, $usecache = true, $quietBuild = true)
+    /**
+     * @var integer Default timeout for run
+     */
+    private $timeout = 600;
+
+    public function __construct(Logger $logger, Docker $docker, $usecache = true, $quietBuild = true, $timeout = 600)
     {
         $this->logger = $logger;
         $this->docker = $docker;
         $this->usecache = $usecache;
         $this->quietBuild = $quietBuild;
+        $this->timeout = $timeout;
     }
 
     /**
@@ -143,9 +149,15 @@ class Executor
         }
 
         $config['Cmd'] = $cmdOverride;
+        //$config['AttachStdout'] = true;
+        //$config['AttachStderr'] = true;
 
         $container = new Container($config);
         $container->setImage($image);
+
+        //Find better way to pass timeout
+        $currentTimeout = ini_get('default_socket_timeout');
+        ini_set('default_socket_timeout', $this->timeout);
 
         $this->docker->getContainerManager()->run($container)->attach($container, function ($type, $content) use ($logger) {
             if ($type === 2) {
@@ -154,6 +166,8 @@ class Executor
                 $logger->addInfo($content);
             }
         })->wait($container);
+
+        ini_set('default_socket_timeout', $currentTimeout);
 
         return $container;
     }
