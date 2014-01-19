@@ -17,6 +17,8 @@ namespace Joli\JoliCi\BuildStrategy;
  */
 interface BuildStrategyInterface
 {
+    const WORKDIR = "/home/project";
+
     /**
      * Create builds for a project
      *

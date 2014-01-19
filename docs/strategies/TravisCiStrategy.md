@@ -10,4 +10,8 @@ For the moment only the following language / version list is supported, goal is 
 	* 5.3
 	* 5.4
 	* 5.5
-	 
+* ruby
+    * 1.9.2
+    * 1.9.3
+    * 2.0.0
+    * 2.1.0

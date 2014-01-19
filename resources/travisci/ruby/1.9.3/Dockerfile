@@ -1,0 +1,1 @@
+RUN rvm install 1.9.3 && rvm alias create default 1.9.3

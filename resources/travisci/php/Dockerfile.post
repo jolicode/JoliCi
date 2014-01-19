@@ -9,5 +9,5 @@ RUN ln -s /etc/php5 ~/.phpenv/versions/php/etc
 RUN ls -l ~/.phpenv/versions/php/etc/conf.d
 
 # Add project at the end
-ADD .   /project
-WORKDIR /project
+ADD .   /home/project
+WORKDIR /home/project

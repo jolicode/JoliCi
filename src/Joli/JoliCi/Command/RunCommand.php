@@ -12,8 +12,10 @@ namespace Joli\JoliCi\Command;
 
 use Docker\Docker;
 use Docker\Http\Client;
+use Joli\JoliCi\Builder;
 use Joli\JoliCi\Executor;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
+use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\Log\SimpleFormatter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -23,8 +25,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use Joli\JoliCi\Builder;
-use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 
 
 class RunCommand extends Command

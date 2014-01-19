@@ -37,16 +37,31 @@ class Build
         $this->dockername = sprintf("%s-%s", uniqid(), $name);
     }
 
+    /**
+     * Get name of this build
+     *
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * Return directory of build
+     *
+     * @return string
+     */
     public function getDirectory()
     {
         return $this->directory;
     }
 
+    /**
+     * Return the docker name use for image name
+     *
+     * @return string
+     */
     public function getDockerName()
     {
         return $this->dockername;

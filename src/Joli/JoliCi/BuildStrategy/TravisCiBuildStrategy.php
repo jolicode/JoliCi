@@ -24,7 +24,24 @@ use Symfony\Component\Yaml\Yaml;
 class TravisCiBuildStrategy implements BuildStrategyInterface
 {
     private $defaultTestCommand = array(
-        'php' => 'phpunit'
+        'php' => 'phpunit',
+        'node_js' => 'npm test',
+        'ruby' => 'bundle install && bundle exec rake'
+    );
+
+    private $languageVersionKeyMapping = array(
+        'php' => 'php',
+        'ruby' => 'rvm'
+    );
+
+    private $encapsulation = array(
+        'php' => '%s',
+        'ruby' => '/bin/bash -l -c "rvm use default && %s"'
+    );
+
+    private $installMapping = array(
+        'php' => '',
+        'ruby' => 'bundle install'
     );
 
     /**
@@ -61,25 +78,30 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $config = Yaml::parse($directory.DIRECTORY_SEPARATOR.".travis.yml");
 
         $language             = $config['language'];
-        $additionalRunContent = $this->parseBeforeScript($config);
+        $versionKey           = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
+        $beforeScriptContent  = $this->parseBeforeScript($config);
         $cmdContent           = $this->parseScript($config);
         $buildRoot            = $this->buildPath.DIRECTORY_SEPARATOR.uniqid();
         $commonContent        = file_get_contents($this->resourcesPath."/Dockerfile");
+        $installContent       = $this->parseInstall($config);
+        $beforeInstallContent = $this->parseBeforeInstall($config);
 
-        if (isset($config[$language]) && file_exists($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.pre")) {
+        if (isset($config[$versionKey]) && file_exists($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.pre")) {
             $languageContentPre  = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.pre");
             $languageContentPost = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR."Dockerfile.post");
 
-            foreach ($config[$language] as $version) {
+            foreach ($config[$versionKey] as $version) {
                 if (file_exists($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR."Dockerfile")) {
                     $versionContent = file_get_contents($this->resourcesPath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR."Dockerfile");
 
-                    $dockerFileContent = sprintf("%s\n%s\n%s\n%s\n%s\n%s",
+                    $dockerFileContent = sprintf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s",
                         $commonContent,
                         $languageContentPre,
                         $versionContent,
                         $languageContentPost,
-                        $additionalRunContent,
+                        $beforeInstallContent,
+                        $installContent,
+                        $beforeScriptContent,
                         $cmdContent
                     );
 
@@ -130,13 +152,10 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         }
 
         if (is_array($config['before_script'])) {
-            $config['before_script'] = array_map(function ($value) {
-                return sprintf("(%s || echo -n '')", $value);
-            }, $config['before_script']);
-            return sprintf("RUN cd /project && %s", implode(" && ", $config['before_script']));
-        } else {
-            return sprintf("RUN cd /project && (%s || exit 0)", $config['before_script']);
+            $config['before_script'] = sprintf("%s", implode(" && ", $config['before_script']));
         }
+
+        return sprintf("RUN cd %s && %s", self::WORKDIR, $this->encapsulateCmd($config['before_script']));
     }
 
     /**
@@ -149,13 +168,58 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private function parseScript($config)
     {
         if (!isset($config['script'])) {
-            return sprintf("CMD %s", $this->defaultTestCommand[$config['language']]);
+            $config['script'] = sprintf("%s", $this->defaultTestCommand[$config['language']]);
         }
 
         if (is_array($config['script'])) {
-            return sprintf("CMD %s", implode(" && ", $config['script']));
-        } else {
-            return sprintf("CMD %s", $config['script']);
+            $config['script'] = sprintf("%s", implode(" && ", $config['script']));
         }
+
+        return sprintf("CMD %s", $this->encapsulateCmd($config, $config['script']));
+    }
+
+    /**
+     * Return content for task before install
+     *
+     * @param array $config TravisCi Configuration parsed
+     *
+     * @return string Content to add to Dockerfile
+     */
+    private function parseBeforeInstall($config)
+    {
+        if (!isset($config['before_install'])) {
+            return "";
+        }
+
+        if (is_array($config['before_install'])) {
+            $config['before_install'] = sprintf("%s", implode(" && ", $config['before_install']));
+        }
+
+        return sprintf("RUN cd %s && %s", self::WORKDIR, $this->encapsulateCmd($config, $config['before_install']));
+    }
+
+    /**
+     * Return command for task install
+     *
+     * @param array $config TravisCi Configuration parsed
+     *
+     * @return string Content to add to Dockerfile
+     */
+    private function parseInstall($config)
+    {
+        return sprintf("RUN cd %s && %s", self::WORKDIR, $this->encapsulateCmd($config, $this->installMapping[$config['language']]));
+    }
+
+    /**
+     * Encapsulate command for given language
+     *
+     * @param array  $config TravisCi Configuration parsed
+     * @param string $cmd    Command to encapsulate
+     *
+     * @return string Content to add to Dockerfile
+     */
+    private function encapsulateCmd($config, $cmd)
+    {
+        return sprintf($this->encapsulation[$config['language']], $cmd);
     }
 }
