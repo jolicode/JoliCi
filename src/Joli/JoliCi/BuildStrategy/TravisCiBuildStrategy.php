@@ -89,10 +89,10 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         foreach ($config[$versionKey] as $version) {
             $this->builder->setTemplateName(sprintf("%s/Dockerfile-%s.twig", $language, $version));
             $this->builder->setVariables(array(
-                'before_install' => $this->getAsArray($config, 'before_install'),
-                'install'        => $this->getAsArray($config, 'install'),
-                'before_script'  => $this->getAsArray($config, 'before_script'),
-                'script'         => $this->getAsArray($config, 'script')
+                'before_install' => $this->getConfigValue($config, $language, 'before_install'),
+                'install'        => $this->getConfigValue($config, $language, 'install'),
+                'before_script'  => $this->getConfigValue($config, $language, 'before_script'),
+                'script'         => $this->getConfigValue($config, $language, 'script')
             ));
 
             $buildName = sprintf("%s-%s", $language, $version);
@@ -102,9 +102,14 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             $this->filesystem->rcopy($directory, $buildDir, true);
 
             $this->builder->setOutputName('Dockerfile');
-            $this->builder->writeOnDisk($buildDir);
 
-            $builds[] = new Build($buildName, $buildDir);
+            try {
+                $this->builder->writeOnDisk($buildDir);
+
+                $builds[] = new Build($buildName, $buildDir);
+            } catch (\Twig_Error_Loader $e) {
+                //Do nothing, template does not exist so language-php is not supported by JoliCI (emit a warning ?)
+            }
         }
 
         return $builds;
@@ -126,9 +131,22 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         return file_exists($directory.DIRECTORY_SEPARATOR.".travis.yml") && is_file($directory.DIRECTORY_SEPARATOR.".travis.yml");
     }
 
-    private function getAsArray($config, $key)
+    /**
+     * Get command lines to add for a configuration value in .travis.yml file
+     *
+     * @param array  $config   Configuration of travis ci parsed
+     * @param string $language Language for getting the default value if no value is set
+     * @param string $key      Configuration key
+     *
+     * @return array A list of command to add to Dockerfile
+     */
+    private function getConfigValue($config, $language, $key)
     {
-        if (!isset($config[$key])) {
+        if (!isset($config[$key]) || empty($config[$key])) {
+            if (isset($this->defaults[$language][$key])) {
+                return $this->defaults[$language][$key];
+            }
+
             return array();
         }
 
