@@ -1,1 +1,0 @@
-RUN rvm install 1.9.2 && rvm alias create default 1.9.2

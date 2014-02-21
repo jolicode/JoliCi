@@ -10,21 +10,14 @@
 
 namespace Joli\JoliCi\Command;
 
-use Docker\Docker;
-use Docker\Http\Client;
-use Joli\JoliCi\Builder;
-use Joli\JoliCi\Executor;
-use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
-use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
-use Joli\JoliCi\Log\SimpleFormatter;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use Joli\JoliCi\Container;
+use Joli\JoliCi\Filesystem\Filesystem;
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
 
 
 class RunCommand extends Command
@@ -46,31 +39,23 @@ class RunCommand extends Command
      */
     protected function configure()
     {
+        $defaultDockerHost = getenv('DOCKER_HOST') ? sprintf("tcp://%s:4243", getenv('DOCKER_HOST')) : "unix:///var/run/docker.sock";
+
         $this->setName('run');
         $this->setDescription('Run tests on your project');
         $this->addOption('project-path', 'p', InputOption::VALUE_OPTIONAL, "Path where you project is", ".");
         $this->addOption('no-cache', null, InputOption::VALUE_NONE, "Do not use cache of docker");
-        $this->addOption('docker-host', null, InputOption::VALUE_OPTIONAL, "Docker server location", "unix:///var/run/docker.sock");
+        $this->addOption('docker-host', null, InputOption::VALUE_OPTIONAL, "Docker server location", $defaultDockerHost);
         $this->addArgument('cmd', InputArgument::OPTIONAL, "Override test command");
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $quietBuild       = !(OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
-        $tmpDir           = sys_get_temp_dir().DIRECTORY_SEPARATOR."jolici-builds";
-        $logger           = new Logger("standalone-logger");
-        $joliciStrategy   = new JoliCiBuildStrategy($tmpDir);
-        $travisCiStrategy = new TravisCiBuildStrategy($tmpDir, $this->resourcesPath.DIRECTORY_SEPARATOR."travisci");
-        $docker           = new Docker(new Client($input->getOption('docker-host')));
-        $executor         = new Executor($logger, $docker, !$input->getOption('no-cache'), $quietBuild);
-        $filesystem       = new Filesystem();
-        $handler          = new StreamHandler("php://stdout", $quietBuild ? Logger::INFO : Logger::DEBUG);
-        $builder          = new Builder();
-
-        $handler->setFormatter(new SimpleFormatter());
-        $builder->pushStrategy($joliciStrategy);
-        $builder->pushStrategy($travisCiStrategy);
-        $logger->pushHandler($handler);
+        $container  = new Container();
+        $quiet      = !(OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
+        $builder    = $container->getBuilder();
+        $executor   = $container->getExecutor($input->getOption('docker-host'), !$input->getOption('no-cache'), $quiet);
+        $filesystem = new Filesystem();
 
         $output->writeln("<info>Creating builds...</info>");
         $builds = $builder->createBuilds($input->getOption("project-path"));
@@ -86,6 +71,7 @@ class RunCommand extends Command
             $filesystem->remove($build->getDirectory());
         }
 
+        //Remove parent folder
         if (count($builds) > 0) {
             rmdir(dirname($build->getDirectory()));
         }

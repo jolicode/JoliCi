@@ -4,13 +4,14 @@ namespace Joli\JoliCi\BuildStrategy;
 
 use org\bovigo\vfs\vfsStream;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
+use Joli\JoliCi\Builder\DockerfileBuilder;
 
 class TravisCiBuildStrategyTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
         $this->buildPath = vfsStream::setup('build-path');
-        $this->strategy = new TravisCiBuildStrategy(vfsStream::url('build-path'), __DIR__."/../../../../resources/travisci");
+        $this->strategy = new TravisCiBuildStrategy(new DockerfileBuilder(), vfsStream::url('build-path'));
     }
 
     public function testSupportTrue()

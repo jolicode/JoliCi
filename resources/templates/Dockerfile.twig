@@ -1,0 +1,17 @@
+{% block from %}
+FROM jolicode/base
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+ENV WORKDIR $HOME/project
+ADD . $WORKDIR
+
+{% block before_install %}{% endblock %}
+
+{% block install %}{% endblock %}
+
+{% block before_script %}{% endblock %}
+
+{% block script %}{% endblock %}

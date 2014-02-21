@@ -1,5 +1,0 @@
-RUN apt-get -y install expect-dev gawk libyaml-dev libsqlite3-dev sqlite3 autoconf libgdbm-dev libncurses5-dev automake libtool bison pkg-config libffi-dev
-RUN curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer -o /tmp/rvm-installer 
-RUN bash /tmp/rvm-installer latest-1.25 && rm /tmp/rvm-installer
-
-ENV PATH /usr/local/rvm/bin/:$PATH

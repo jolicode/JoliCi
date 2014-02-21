@@ -1,1 +1,0 @@
-RUN rvm install 2.0.0 && rvm alias create default 2.0.0

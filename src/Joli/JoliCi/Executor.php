@@ -15,7 +15,7 @@ use Monolog\Logger;
 use Docker\Docker;
 use Docker\Context\Context;
 use Docker\Image;
-use Docker\Container;
+use Docker\Container as DockerContainer;
 
 class Executor
 {
@@ -128,12 +128,12 @@ class Executor
     }
 
     /**
-     * Run default command for container
+     * Run default command for DockerContainer
      *
      * @param string        $dockername  Name of docker image
      * @param string|array  $cmdOverride Override default command with this one
      *
-     * @return Container return the container executed
+     * @return DockerContainer return the container executed
      */
     public function runTest($dockername, $cmdOverride = array())
     {
@@ -152,7 +152,7 @@ class Executor
         //$config['AttachStdout'] = true;
         //$config['AttachStderr'] = true;
 
-        $container = new Container($config);
+        $container = new DockerContainer($config);
         $container->setImage($image);
 
         //Find better way to pass timeout

@@ -39,7 +39,8 @@ class Builder
             //For each strategies working with this project
             if ($strategy->supportProject($directory)) {
                 //We get builds
-                $builds += $strategy->createBuilds($directory);
+                $newBuilds = $strategy->createBuilds($directory);
+                $builds    = array_merge($builds, $newBuilds);
             }
         }
 

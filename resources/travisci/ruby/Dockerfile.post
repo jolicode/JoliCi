@@ -1,3 +1,0 @@
-# Add project at the end
-ADD .   /home/project
-WORKDIR /home/project

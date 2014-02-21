@@ -1,0 +1,17 @@
+{% extends "Dockerfile.twig" %}
+
+{% block before_install %}
+RUN cd $WORKDIR{% for line in before_install %} && {{ line }}{% endfor %}
+{% endblock %}
+
+{% block install %}
+RUN cd $WORKDIR{% for line in install %} && {{ line }}{% endfor %}
+{% endblock %}
+
+{% block before_script %}
+RUN cd $WORKDIR{% for line in before_script %} && {{ line }}{% endfor %}
+{% endblock %}
+
+{% block script %}
+CMD cd $WORKDIR{% for line in script %} && {{ line }}{% endfor %}
+{% endblock %}
