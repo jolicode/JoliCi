@@ -35,18 +35,21 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'install'        => array('composer install'),
             'before_script'  => array(),
             'script'         => array('phpunit'),
+            'env'            => array()
         ),
         'ruby' => array(
             'before_install' => array(),
             'install'        => array('bundle install'),
             'before_script'  => array(),
             'script'         => array('bundle exec rake'),
+            'env'            => array()
         ),
         'node_js' => array(
             'before_install' => array(),
             'install'        => array('npm install'),
             'before_script'  => array(),
             'script'         => array('npm test'),
+            'env'            => array()
         ),
     );
 
@@ -86,13 +89,23 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $versionKey = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
         $buildRoot  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid();
 
+        $envFromConfig = $this->getConfigValue($config, $language, "env");
+        $envs          = array();
+
+        foreach ($envFromConfig as $env) {
+            list($key, $value) = explode("=", $env);
+            $envs[$key] = $value;
+        }
+
         foreach ($config[$versionKey] as $version) {
+
             $this->builder->setTemplateName(sprintf("%s/Dockerfile-%s.twig", $language, $version));
             $this->builder->setVariables(array(
                 'before_install' => $this->getConfigValue($config, $language, 'before_install'),
                 'install'        => $this->getConfigValue($config, $language, 'install'),
                 'before_script'  => $this->getConfigValue($config, $language, 'before_script'),
-                'script'         => $this->getConfigValue($config, $language, 'script')
+                'script'         => $this->getConfigValue($config, $language, 'script'),
+                'env'            => $envs
             ));
 
             $buildName = sprintf("%s-%s", $language, $version);

@@ -1,5 +1,11 @@
 {% extends "Dockerfile.twig" %}
 
+{% block env %}
+{% for key,value in env %}
+ENV {{ key }} {{ value }}
+{% endfor %}
+{% endblock %}
+
 {% block before_install %}
 RUN /bin/bash -c -l "cd $WORKDIR{% for line in before_install %} && {{ line|replace({"$": "\$", '"': '\"'}) }}{% endfor %}"
 {% endblock %}
