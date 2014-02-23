@@ -51,8 +51,11 @@ class Container
         return new Docker(new Client($entryPoint));
     }
 
-    public function getExecutor($dockerEntryPoint, $cache = true, $quiet = true)
+    public function getExecutor($dockerEntryPoint, $cache = true, $quiet = true, $timeout = 600)
     {
+        //Set timeout in ini (not superb but only way with current docker php library)
+        ini_set('default_socket_timeout', $timeout);
+
         return new Executor($this->getConsoleLogger(!$quiet), $this->getDocker($dockerEntryPoint), $cache, $quiet);
     }
 

@@ -25,7 +25,6 @@ use Joli\JoliCi\Builder\DockerfileBuilder;
 class TravisCiBuildStrategy implements BuildStrategyInterface
 {
     private $languageVersionKeyMapping = array(
-        'php' => 'php',
         'ruby' => 'rvm'
     );
 
@@ -85,7 +84,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     {
         $builds     = array();
         $config     = Yaml::parse($directory.DIRECTORY_SEPARATOR.".travis.yml");
-        $language   = $config['language'];
+        $language   = isset($config['language']) ? $config['language'] : 'ruby';
         $versionKey = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
         $buildRoot  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid();
 
