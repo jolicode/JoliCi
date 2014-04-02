@@ -3,3 +3,9 @@
 {% block from %}
 FROM jolicode/hhvm
 {% endblock %}
+
+{% block content %}
+ENV TRAVIS_PHP_VERSION hhvm
+RUN echo "#!/bin/bash\necho php" > /usr/local/bin/phpenv && chmod +x /usr/local/bin/phpenv
+RUN mkdir -p $HOME/.phpenv/versions/php && ln -s /etc/php5 $HOME/.phpenv/versions/php/etc
+{% endblock %}

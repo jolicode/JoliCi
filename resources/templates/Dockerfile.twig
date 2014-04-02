@@ -7,7 +7,7 @@ FROM jolicode/base
 
 ENV WORKDIR $HOME/project
 ADD . $WORKDIR
-WORKDIR $WORKDIR
+WORKDIR ~/project
 
 {% block env %}{% endblock %}
 

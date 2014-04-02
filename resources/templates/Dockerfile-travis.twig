@@ -7,15 +7,21 @@ ENV {{ key }} {{ value }}
 {% endblock %}
 
 {% block before_install %}
-RUN /bin/bash -c -l "cd $WORKDIR{% for line in before_install %} && {{ line|replace({"$": "\$", '"': '\"'}) }}{% endfor %}"
+    {% for line in before_install %}
+RUN /bin/bash -c -l "cd $WORKDIR && {{ line|replace({"$": "\$", '"': '\"'}) }}"
+    {% endfor %}
 {% endblock %}
 
 {% block install %}
-RUN /bin/bash -c -l "cd $WORKDIR{% for line in install %} && {{ line|replace({"$": "\$", '"': '\"'}) }}{% endfor %}"
+    {% for line in install %}
+RUN /bin/bash -c -l "cd $WORKDIR && {{ line|replace({"$": "\$", '"': '\"'}) }}"
+    {% endfor %}
 {% endblock %}
 
 {% block before_script %}
-RUN /bin/bash -c -l "cd $WORKDIR{% for line in before_script %} && {{ line|replace({"$": "\$", '"': '\"'}) }}{% endfor %}"
+    {% for line in before_script %}
+RUN /bin/bash -c -l "cd $WORKDIR && {{ line|replace({"$": "\$", '"': '\"'}) }}"
+    {% endfor %}
 {% endblock %}
 
 {% block script %}
