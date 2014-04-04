@@ -71,13 +71,12 @@ class Executor
 
         //Run build
         $context  = new Context($directory);
-        $response = $this->docker->build($context, $dockername, $this->quietBuild, $this->usecache);
+        $response = $this->docker->build($context, $dockername, $this->quietBuild, $this->usecache, false, false);
         $error    = false;
 
         $response->read(function ($output) use ($logger, $response, &$error) {
             $static    = false;
             $staticId  = null;
-            $needClean = false;
 
             if ($response->headers->get('Content-Type') == 'application/json') {
                 $output  = json_decode($output, true);
@@ -88,33 +87,25 @@ class Executor
 
                 if (isset($output['status'])) {
                     $message .= " ".$output['status'];
-                    $needClean = true;
                 }
 
                 //Handle "static" messages
                 if (isset($output['id'])) {
                     $static    = true;
                     $staticId  = $output['id'];
-                    $needClean = true;
                 }
 
                 //Only get progress message (but current, total, and start size may be available under progressDetail)
                 if (isset($output['progress'])) {
                     $message .= " ".$output['progress'];
-                    $needClean = true;
                 }
 
                 if (isset($output['error'])) {
                     $error = true;
-                    $message = $output['error']."\n";
+                    $message = $output['error'];
                 }
             } else {
                 $message = $output;
-            }
-
-            //remove whitespace and other characters and force a clean message only when needed
-            if ($needClean) {
-                $message = trim($message)."\n";
             }
 
             if (!$error) {
@@ -149,8 +140,6 @@ class Executor
         }
 
         $config['Cmd'] = $cmdOverride;
-        //$config['AttachStdout'] = true;
-        //$config['AttachStderr'] = true;
 
         $container = new DockerContainer($config);
         $container->setImage($image);
@@ -159,13 +148,13 @@ class Executor
         $currentTimeout = ini_get('default_socket_timeout');
         ini_set('default_socket_timeout', $this->timeout);
 
-        $this->docker->getContainerManager()->run($container)->attach($container, function ($type, $content) use ($logger) {
+        $this->docker->getContainerManager()->run($container, function ($type, $content) use ($logger) {
             if ($type === 2) {
                 $logger->addError($content);
             } else {
                 $logger->addInfo($content);
             }
-        })->wait($container);
+        });
 
         ini_set('default_socket_timeout', $currentTimeout);
 
