@@ -75,15 +75,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->method('run')
             ->will($this->returnSelf());
 
-        $containerManager->expects($this->once())
-            ->method('attach')
-            ->with($this->isInstanceOf('\Docker\Container', $this->isType('callable')))
-            ->will($this->returnSelf());
-
-        $containerManager->expects($this->once())
-            ->method('wait')
-            ->will($this->returnSelf());
-
         $container = $this->executor->runTest("test");
 
         $this->assertInstanceOf('\Docker\Container', $container);
