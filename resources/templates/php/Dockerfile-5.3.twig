@@ -1,11 +1,15 @@
 {% extends "Dockerfile-travis.twig" %}
 
+{% block env %}
+{{ parent() }}
+ENV TRAVIS_PHP_VERSION 5.3
+{% endblock %}
+
 {% block from %}
 FROM jolicode/php53
 {% endblock %}
 
 {% block content %}
-ENV TRAVIS_PHP_VERSION 5.3
 RUN echo "#!/bin/bash\necho php" > /usr/local/bin/phpenv && chmod +x /usr/local/bin/phpenv
-RUN mkdir -p $HOME/.phpenv/versions/php && ln -s /etc/php5 $HOME/.phpenv/versions/php/etc
+RUN mkdir -p $HOME/.phpenv/versions/php && ln -s /etc/php5 $HOME/.phpenv/versions/php/etc && ln -s /etc/php5/cli/php.ini /etc/php5/php.ini
 {% endblock %}
