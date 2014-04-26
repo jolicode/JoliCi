@@ -12,13 +12,11 @@ namespace Joli\JoliCi\Command;
 
 use Joli\JoliCi\Container;
 use Joli\JoliCi\Filesystem\Filesystem;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-
 
 class RunCommand extends Command
 {
@@ -72,7 +70,7 @@ class RunCommand extends Command
             $filesystem->remove($build->getDirectory());
         }
 
-        //Remove parent folder
+        // Remove parent folder
         if (count($builds) > 0) {
             rmdir(dirname($build->getDirectory()));
         }

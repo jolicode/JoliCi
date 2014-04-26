@@ -85,7 +85,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("test", $config["Image"]);
     }
 
-public function testRunTestWithCmdOverride()
+    public function testRunTestWithCmdOverride()
     {
         $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
 

@@ -4,15 +4,12 @@ namespace Joli\JoliCi;
 
 use Docker\Docker;
 use Docker\Http\Client;
-
 use Joli\JoliCi\Log\SimpleFormatter;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
 use Joli\JoliCi\Builder\DockerfileBuilder;
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-
 use TwigGenerator\Builder\Generator;
 
 class Container

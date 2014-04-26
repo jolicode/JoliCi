@@ -35,6 +35,7 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
 
     /**
      * @param string $buildPath
+     * @param Filesystem|null $filesystem
      */
     public function __construct($buildPath, Filesystem $filesystem = null)
     {

@@ -65,6 +65,7 @@ class Filesystem extends BaseFilesystem
      * @see \Symfony\Component\Filesystem\Filesystem::copy()
      * @param string $originFile
      * @param string $targetFile
+     * @param Boolean $override
      */
     public function copy($originFile, $targetFile, $override = false)
     {

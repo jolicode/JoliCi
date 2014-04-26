@@ -1,10 +1,10 @@
 # TravisCiBuildStrategy
 
-This strategy parse the .travis.yml file at the root of your project to create Dockerfile and run tests.
+This strategy parses the .travis.yml file at the root of your project to create a Dockerfile and run tests.
 
 ## Language and version support
 
-For the moment only the following language / version list is supported, goal is to support what travis support:
+For the moment only the following language / version list is supported, the goal is to support what travis supports:
 
 * php
 	* 5.3

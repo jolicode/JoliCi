@@ -1,16 +1,16 @@
 language: php
 
 php:
-  - 5.4
-  - 5.5
-  - hhvm
+    - 5.4
+    - 5.5
+    - hhvm
 
 matrix:
-  allow_failures:
-    - php: hhvm
+    allow_failures:
+        - php: hhvm
 
 
 before_script:
-  - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source --dev install
+    - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source install
     
 script: phpunit
