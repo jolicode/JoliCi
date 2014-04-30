@@ -6,7 +6,7 @@ This strategy is based on a directory structure and Dockerfiles, this is the mos
 
 To create builds the project **MUST** have a `.jolici` directory.
 
-Each subdirectory is then considered as a different build, they **MUST** have a `Dockerfile` which will explained how to build projects and how to run tests.
+Each subdirectory is then considered as a different build, they **MUST** have a `Dockerfile` which will explain how to build projects and how to run tests.
 
 `CMD` or `ENTRYPOINT` commands in a `Dockerfile` will describe how to run a build.
 

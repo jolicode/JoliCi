@@ -10,12 +10,11 @@
 
 namespace Joli\JoliCi;
 
-use Monolog\Logger;
-
 use Docker\Docker;
 use Docker\Context\Context;
 use Docker\Image;
 use Docker\Container as DockerContainer;
+use Monolog\Logger;
 
 class Executor
 {
@@ -60,8 +59,8 @@ class Executor
     /**
      * Run build command
      *
-     * @param unknown $directory           Directory where the project to build is
-     * @param unknown $dockername          Name of the docker image to create
+     * @param string $directory           Directory where the project to build is
+     * @param string $dockername          Name of the docker image to create
      *
      * @return boolean Return true on build success, false otherwise
      */
@@ -69,7 +68,7 @@ class Executor
     {
         $logger = $this->logger;
 
-        //Run build
+        // Run build
         $context  = new Context($directory);
         $response = $this->docker->build($context, $dockername, $this->quietBuild, $this->usecache, false, false);
         $error    = false;
@@ -95,7 +94,7 @@ class Executor
                     $staticId  = $output['id'];
                 }
 
-                //Only get progress message (but current, total, and start size may be available under progressDetail)
+                // Only get progress message (but current, total, and start size may be available under progressDetail)
                 if (isset($output['progress'])) {
                     $message .= " ".$output['progress'];
                 }
@@ -130,7 +129,7 @@ class Executor
     {
         $logger = $this->logger;
 
-        //Execute test
+        // Execute test
         $config = array();
         $image = new Image();
         $image->setRepository($dockername);
@@ -144,7 +143,7 @@ class Executor
         $container = new DockerContainer($config);
         $container->setImage($image);
 
-        //Find better way to pass timeout
+        // Find better way to pass timeout
         $currentTimeout = ini_get('default_socket_timeout');
         ini_set('default_socket_timeout', $this->timeout);
 

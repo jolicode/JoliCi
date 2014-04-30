@@ -11,9 +11,10 @@
 namespace Joli\JoliCi\BuildStrategy;
 
 use Joli\JoliCi\Build;
+use Joli\JoliCi\Builder\DockerfileBuilder;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
-use Joli\JoliCi\Builder\DockerfileBuilder;
+
 
 /**
  * TravisCi implementation for build
@@ -68,7 +69,9 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private $filesystem;
 
     /**
+     * @param DockerfileBuilder $builder
      * @param string $buildPath
+     * @param Filesystem|null $filesystem
      */
     public function __construct(DockerfileBuilder $builder, $buildPath, Filesystem $filesystem = null)
     {
@@ -110,7 +113,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             $buildName = sprintf("%s-%s", $language, $version);
             $buildDir  = $buildRoot.DIRECTORY_SEPARATOR.$buildName;
 
-            //Recursive copy of the pull to this directory
+            // Recursive copy of the pull to this directory
             $this->filesystem->rcopy($directory, $buildDir, true);
 
             $this->builder->setOutputName('Dockerfile');
@@ -120,7 +123,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
 
                 $builds[] = new Build($buildName, $buildDir);
             } catch (\Twig_Error_Loader $e) {
-                //Do nothing, template does not exist so language-php is not supported by JoliCI (emit a warning ?)
+                // Do nothing, template does not exist so language-php is not supported by JoliCI (emit a warning ?)
             }
         }
 

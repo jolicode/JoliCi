@@ -1,11 +1,11 @@
 name: jolici.phar
 main: bin/jolici
 include:
-  - src/
-  - vendor/
-  - resources/
+    - src/
+    - vendor/
+    - resources/
 exclude:
-  - "/[Tt]ests?/"
-  - "/docs?/"
-  - "^vendor/phpunit"
-  - "^vendor/bin"
+    - "/[Tt]ests?/"
+    - "/docs?/"
+    - "^vendor/phpunit"
+    - "^vendor/bin"

@@ -3,8 +3,8 @@
 namespace Joli\JoliCi\BuildStrategy;
 
 use org\bovigo\vfs\vfsStream;
-use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\Builder\DockerfileBuilder;
+use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 
 class TravisCiBuildStrategyTest extends \PHPUnit_Framework_TestCase
 {
