@@ -37,7 +37,7 @@ class RunCommand extends Command
      */
     protected function configure()
     {
-        $defaultDockerHost = getenv('DOCKER_HOST') ? sprintf("tcp://%s:4243", getenv('DOCKER_HOST')) : "unix:///var/run/docker.sock";
+        $defaultDockerHost = getenv('DOCKER_HOST') ?: "unix:///var/run/docker.sock";
 
         $this->setName('run');
         $this->setDescription('Run tests on your project');

@@ -13,7 +13,13 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     throw new \Exception('Unable to load autoloader');
 }
 
-$application = new Application('jolici', Git::getVersion(__DIR__));
+$version = "dev";
+
+if (class_exists("\cbednarski\Pharcc\Git")) {
+    $version = Git::getVersion(__DIR__);
+}
+
+$application = new Application('jolici', $version);
 $application->add(new RunCommand(__DIR__.'/../resources'));
 
 $application->run();

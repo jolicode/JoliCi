@@ -21,6 +21,12 @@ class SimpleFormatter implements FormatterInterface
      */
     public function format(array $record)
     {
+        if (isset($record['context']['clear-static'])) {
+            $this->static = array();
+
+            return "";
+        }
+
         $message = $record['message'];
 
         if (isset($record['context']['static']) && $record['context']['static']) {
