@@ -16,7 +16,7 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 ## Usage
 
-* [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.1.1/jolici.phar)
+* [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.0/jolici.phar)
 * Run it under your project `php jolici.phar run`
 
 First run can be quite long since it has to build everything from the beginning. Subsequent build should be faster thanks to docker caching.
