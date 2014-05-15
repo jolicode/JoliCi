@@ -15,16 +15,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     public function testBuild()
     {
         $executor = new Executor($this->logger, $this->docker, true, true);
-        $response = $this->getMock('\Docker\Http\StreamedResponse', array('read'));
 
         $this->docker->expects($this->once())
             ->method('build')
-            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isTrue(), $this->isTrue())
-            ->will($this->returnValue($response));
-
-        $response->expects($this->once())
-            ->method('read')
-            ->with($this->isType('callable'));
+            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isTrue(), $this->isTrue());
 
         $executor->runBuild("/test", "test");
     }
@@ -32,16 +26,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     public function testBuildWithoutCache()
     {
         $executor = new Executor($this->logger, $this->docker, false, true);
-        $response = $this->getMock('\Docker\Http\StreamedResponse', array('read'));
 
         $this->docker->expects($this->once())
             ->method('build')
-            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isTrue(), $this->isFalse())
-            ->will($this->returnValue($response));
-
-        $response->expects($this->once())
-            ->method('read')
-            ->with($this->isType('callable'));
+            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isTrue(), $this->isFalse());
 
         $executor->runBuild("/test", "test");
     }
@@ -49,16 +37,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     public function testBuildNoQuiet()
     {
         $executor = new Executor($this->logger, $this->docker, false, false);
-        $response = $this->getMock('\Docker\Http\StreamedResponse', array('read'));
 
         $this->docker->expects($this->once())
             ->method('build')
-            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isFalse(), $this->isFalse())
-            ->will($this->returnValue($response));
-
-        $response->expects($this->once())
-            ->method('read')
-            ->with($this->isType('callable'));
+            ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isFalse(), $this->isFalse());
 
         $executor->runBuild("/test", "test");
     }

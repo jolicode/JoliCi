@@ -70,41 +70,36 @@ class Executor
 
         // Run build
         $context  = new Context($directory);
-        $response = $this->docker->build($context, $dockername, $this->quietBuild, $this->usecache, false, false);
         $error    = false;
 
-        $response->read(function ($output) use ($logger, $response, &$error) {
+        $this->docker->build($context, $dockername, function ($output) use ($logger, &$error) {
             $static    = false;
             $staticId  = null;
+            $output    = json_decode($output, true);
+            $message   = "";
 
-            if ($response->headers->get('Content-Type') == 'application/json') {
-                $output  = json_decode($output, true);
-                $message = "";
-                if (isset($output['stream'])) {
-                    $message = $output['stream'];
-                }
+            if (isset($output['stream'])) {
+                $message = $output['stream'];
+            }
 
-                if (isset($output['status'])) {
-                    $message .= " ".$output['status'];
-                }
+            if (isset($output['status'])) {
+                $message .= " ".$output['status'];
+            }
 
-                //Handle "static" messages
-                if (isset($output['id'])) {
-                    $static    = true;
-                    $staticId  = $output['id'];
-                }
+            //Handle "static" messages
+            if (isset($output['id'])) {
+                $static    = true;
+                $staticId  = $output['id'];
+            }
 
-                // Only get progress message (but current, total, and start size may be available under progressDetail)
-                if (isset($output['progress'])) {
-                    $message .= " ".$output['progress'];
-                }
+            // Only get progress message (but current, total, and start size may be available under progressDetail)
+            if (isset($output['progress'])) {
+                $message .= " ".$output['progress'];
+            }
 
-                if (isset($output['error'])) {
-                    $error = true;
-                    $message = $output['error'];
-                }
-            } else {
-                $message = $output;
+            if (isset($output['error'])) {
+                $error = true;
+                $message = $output['error'];
             }
 
             if (!$error) {
@@ -112,7 +107,7 @@ class Executor
             } else {
                 $logger->addError($message, array('static' => $static, 'static-id' => $staticId));
             }
-        });
+        }, $this->quietBuild, $this->usecache, false, false);
 
         $logger->addDebug("", array('clear-static' => true));
 

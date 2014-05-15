@@ -3,7 +3,7 @@
 namespace Joli\JoliCi;
 
 use Docker\Docker;
-use Docker\Http\Client;
+use Docker\Http\DockerClient;
 use Joli\JoliCi\Log\SimpleFormatter;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
@@ -45,7 +45,7 @@ class Container
 
     public function getDocker($entryPoint = "unix:///var/run/docker.sock")
     {
-        return new Docker(new Client($entryPoint));
+        return new Docker(new DockerClient(array(), $entryPoint));
     }
 
     public function getExecutor($dockerEntryPoint, $cache = true, $quiet = true, $timeout = 600)
