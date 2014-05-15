@@ -73,40 +73,31 @@ class Executor
         $error    = false;
 
         $this->docker->build($context, $dockername, function ($output) use ($logger, &$error) {
-            $static    = false;
-            $staticId  = null;
             $output    = json_decode($output, true);
             $message   = "";
+
+            if (isset($output['error'])) {
+                $logger->addError($output['error'], array('static' => false, 'static-id' => null));
+
+                return;
+            }
 
             if (isset($output['stream'])) {
                 $message = $output['stream'];
             }
 
             if (isset($output['status'])) {
-                $message .= " ".$output['status'];
+                $message = $output['status'];
+
+                if (isset($output['progress'])) {
+                    $message .= " ".$output['progress'];
+                }
             }
 
-            //Handle "static" messages
-            if (isset($output['id'])) {
-                $static    = true;
-                $staticId  = $output['id'];
-            }
-
-            // Only get progress message (but current, total, and start size may be available under progressDetail)
-            if (isset($output['progress'])) {
-                $message .= " ".$output['progress'];
-            }
-
-            if (isset($output['error'])) {
-                $error = true;
-                $message = $output['error'];
-            }
-
-            if (!$error) {
-                $logger->addDebug($message, array('static' => $static, 'static-id' => $staticId));
-            } else {
-                $logger->addError($message, array('static' => $static, 'static-id' => $staticId));
-            }
+            $logger->addDebug($message, array(
+                'static'    => isset($output['id']),
+                'static-id' => isset($output['id']) ? $output['id'] : null
+            ));
         }, $this->quietBuild, $this->usecache, false, false);
 
         $logger->addDebug("", array('clear-static' => true));
