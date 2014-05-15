@@ -20,6 +20,8 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 * [Add some dockerfiles](docs/strategies/JoliCiStrategy.md), skip this if you use a [.travis.yml file](docs/strategies/TravisCiStrategy.md)
 * Run it under your project `php jolici.phar run`
 
+![JoliCi Demo](https://github.com/jolicode/JoliCi/raw/master/docs/jolici-terminal.gif "JoliCi Demo")
+
 First run can be quite long since it has to build everything from the beginning. Subsequent build should be faster thanks to docker caching.
 
 If you want to run a different command for test instead of the one set by default (like script parameter in .travis.yml file) you just need to set the new command at the end :
