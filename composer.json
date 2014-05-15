@@ -19,7 +19,8 @@
         "symfony/yaml" : "~2.4",
         "monolog/monolog": "~1.6",
         "stage1/docker-php": "dev-master",
-        "cedriclombardot/twig-generator": "~1.0.0"
+        "cedriclombardot/twig-generator": "~1.0.0",
+        "guzzlehttp/streams": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "~3.7",

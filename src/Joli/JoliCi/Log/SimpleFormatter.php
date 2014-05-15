@@ -38,9 +38,9 @@ class SimpleFormatter implements FormatterInterface
                     'message'      => $message
                 );
 
-                $message = sprintf("\n%s", $message);
+                $message = sprintf("%s\n", $message);
             } else {
-                $diff                         = (count($this->static) - $this->static[$id]['current_line']) - 1;
+                $diff                         = (count($this->static) - $this->static[$id]['current_line']);
                 $lastMessage                  = $this->static[$id]['message'];
                 $this->static[$id]['message'] = $message;
 
@@ -49,11 +49,7 @@ class SimpleFormatter implements FormatterInterface
                     $message = str_pad($message, mb_strlen($lastMessage), " ", STR_PAD_RIGHT);
                 }
 
-                if ($diff > 0) {
-                    $message = sprintf("\x0D\x1B[%sA%s\x1B[%sB", $diff, $message, $diff);
-                } else {
-                    $message = "\x0D".$message;
-                }
+                $message = sprintf("\x0D\x1B[%sA%s\x1B[%sB\x0D", $diff, $message, $diff);
             }
         }
 
