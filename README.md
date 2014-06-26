@@ -27,7 +27,7 @@ First run can be quite long since it has to build everything from the beginning.
 If you want to run a different command for test instead of the one set by default (like script parameter in .travis.yml file) you just need to set the new command at the end :
 
 ```
-php joliciphar.phar run "phpunit -c a-different-file.xml"
+php jolici.phar run "phpunit -c a-different-file.xml"
 ```
 
 This will run `phpunit -c a-different-file.xml` for your tests.
