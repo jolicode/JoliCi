@@ -1,7 +1,8 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
     "hash": "7a57527e446168d1cda35374a95e5d12",
     "packages": [
@@ -276,12 +277,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/stage1/docker-php.git",
-                "reference": "a43e6b013d94ad9f4b31298ff88fceba36844366"
+                "reference": "7f31d195ff38b57acbe5a70c5a4f76ff4a7941bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stage1/docker-php/zipball/a43e6b013d94ad9f4b31298ff88fceba36844366",
-                "reference": "a43e6b013d94ad9f4b31298ff88fceba36844366",
+                "url": "https://api.github.com/repos/stage1/docker-php/zipball/7f31d195ff38b57acbe5a70c5a4f76ff4a7941bf",
+                "reference": "7f31d195ff38b57acbe5a70c5a4f76ff4a7941bf",
                 "shasum": ""
             },
             "require": {
@@ -305,7 +306,7 @@
                 "MIT"
             ],
             "description": "A Docker PHP client",
-            "time": "2014-05-15 14:10:51"
+            "time": "2014-06-26 22:07:21"
         },
         {
             "name": "symfony/console",
