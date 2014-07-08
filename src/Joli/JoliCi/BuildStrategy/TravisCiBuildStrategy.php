@@ -123,7 +123,8 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
 
                 $builds[] = new Build($buildName, $buildDir);
             } catch (\Twig_Error_Loader $e) {
-                // Do nothing, template does not exist so language-php is not supported by JoliCI (emit a warning ?)
+                // TODO: template does not exist so language-php is not supported by JoliCI (emit a warning ?)
+                $this->filesystem->remove($buildDir);
             }
         }
 
