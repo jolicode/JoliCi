@@ -26,6 +26,9 @@
         "phpunit/phpunit": "~3.7",
         "mikey179/vfsStream": "~1.2" 
     },
+    "bin": [
+        "bin/jolici"
+    ],
     "autoload" : {
         "psr-0" : {
             "Joli" : "src"

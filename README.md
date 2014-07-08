@@ -14,9 +14,19 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 * Multiple builds by project
 * Override test command
 
+## Installation
+
+You can install JoliCi by either downloading [`jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.2/jolici.phar) or by installing it via [composer](https://getcomposer.org/).  For example:
+
+```
+composer global require jolicode/jolici:dev-master stage1/docker-php:dev-master guzzlehttp/streams:dev-master
+```
+
+This will install the `jolici` executable to your `$COMPOSER_HOME/vendor/bin` folder (typically `$HOME/.composer/vendor/bin`).  It is recommended to add this directory to your `PATH` environment variable.
+
 ## Usage
 
-* [Download `jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.2/jolici.phar)
+* Install JoliCi as documented above.
 * [Add some dockerfiles](docs/strategies/JoliCiStrategy.md), skip this if you use a [.travis.yml file](docs/strategies/TravisCiStrategy.md)
 * Run it under your project `php jolici.phar run`
 
