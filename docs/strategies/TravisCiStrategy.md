@@ -23,7 +23,7 @@ For the moment only the following language / version list is supported, the goal
 
 ## Service support
 
-No service are available inside this images, this is planned for futur versions.
+No service are available inside this images, this is planned for future versions.
 
 ## Docker images
 
