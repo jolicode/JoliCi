@@ -19,7 +19,7 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 You can install JoliCi by either downloading [`jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.2/jolici.phar) or by installing it via [composer](https://getcomposer.org/).  For example:
 
 ```
-composer global require jolicode/jolici:dev-master stage1/docker-php:dev-master guzzlehttp/streams:dev-master
+composer global require jolicode/jolici:*
 ```
 
 This will install the `jolici` executable to your `$COMPOSER_HOME/vendor/bin` folder (typically `$HOME/.composer/vendor/bin`).  It is recommended to add this directory to your `PATH` environment variable.
