@@ -1,5 +1,14 @@
 ## Change Log
 
+### v0.2.3 (2014/08/01 14:40 +00:00)
+- [093a309](https://github.com/jolicode/JoliCi/commit/093a309cb1d804748cde099df618c21967809c48) Add jolici binary to composer. (@nubs)
+- [d494e90](https://github.com/jolicode/JoliCi/commit/d494e90324f0d87cd6a705b41f825474763a094a) Remove non-available builds from filesystem. (@nubs)
+- [0a715f8](https://github.com/jolicode/JoliCi/commit/0a715f86cb52fe815f379ff28c4bc03a9b746cf9) Add support for gush (@cordoval)
+- [9714ab0](https://github.com/jolicode/JoliCi/commit/9714ab02dc5da5b1af78b4bb7ec4881de7c4620a) Use stable version for dependencies (@nubs)
+
+### v0.2.2 (2014/06/26 22:20 +00:00)
+- [239a2de](https://github.com/jolicode/JoliCi/commit/239a2de6cf5d0db31404dbb39ab6f4b9210aa921) Update dependencies versions (@joelwurtz)
+
 ### v0.2.1 (2014/05/15 15:36 +00:00)
 - [ad1ba9a](https://github.com/jolicode/JoliCi/commit/ad1ba9a3eca7fb4a0e4f3f3e5aba59904d525127) Add ruby versions (@joelwurtz)
 - [d697ee8](https://github.com/jolicode/JoliCi/commit/d697ee8eedcd0b33b42c2b5e89c918fb222eefbc) Encapsulate command in bash logged with profile support (@joelwurtz)
