@@ -1,6 +1,6 @@
 {
     "name": "jolicode/jolici",
-    "version": "0.3.0",
+    "version": "0.2.3",
     "description": "Run your tests on your local computer on different application stack",
     "type": "library",
     "license": "MIT",
