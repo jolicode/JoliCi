@@ -1,6 +1,8 @@
 ## Change Log
 
 ### v0.2.3 (2014/08/01 14:40 +00:00)
+- [1690410](https://github.com/jolicode/JoliCi/commit/16904105468a718a705376baf9d9ac66bd280c64) Add php 5.6 support (@joelwurtz)
+- [99a9dea](https://github.com/jolicode/JoliCi/commit/99a9dea3d196845545c21e1da0449865a900d4f1) Remove hack for phpenv, as new images use phpenv (@joelwurtz)
 - [093a309](https://github.com/jolicode/JoliCi/commit/093a309cb1d804748cde099df618c21967809c48) Add jolici binary to composer. (@nubs)
 - [d494e90](https://github.com/jolicode/JoliCi/commit/d494e90324f0d87cd6a705b41f825474763a094a) Remove non-available builds from filesystem. (@nubs)
 - [0a715f8](https://github.com/jolicode/JoliCi/commit/0a715f86cb52fe815f379ff28c4bc03a9b746cf9) Add support for gush (@cordoval)
