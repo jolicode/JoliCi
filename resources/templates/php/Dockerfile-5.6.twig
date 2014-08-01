@@ -1,0 +1,10 @@
+{% extends "Dockerfile-travis.twig" %}
+
+{% block env %}
+{{ parent() }}
+ENV TRAVIS_PHP_VERSION 5.5
+{% endblock %}
+
+{% block from %}
+FROM jolicode/php56
+{% endblock %}

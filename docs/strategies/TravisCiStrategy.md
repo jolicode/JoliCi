@@ -7,10 +7,11 @@ This strategy parses the .travis.yml file at the root of your project to create 
 For the moment only the following language / version list is supported, the goal is to support what travis supports:
 
 * php
-	* 5.3
-	* 5.4
-	* 5.5
-	* hhvm
+	* 5.3 (5.3.28)
+	* 5.4 (5.4.31)
+	* 5.5 (5.5.15)
+	* 5.6 (5.6.0RC2)
+	* hhvm (3.2.0)
 * ruby
     * 1.9.3
     * 2.0.0
