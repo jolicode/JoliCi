@@ -76,6 +76,6 @@ Thank you!
 * This README is heavily inspired by a @willdurand [blog post](http://williamdurand.fr/2013/07/04/on-open-sourcing-libraries/).
 * [@ubermuda](https://github.com/ubermuda) for accepting many pull requests on [docker-php](https://github.com/stage1/docker-php) library
 
-## Licence
+## License
 
-View the [LICENCE](LICENCE) file attach to this project.
+View the [LICENSE](LICENSE) file attach to this project.
