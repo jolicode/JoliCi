@@ -8,6 +8,8 @@ use Joli\JoliCi\Log\SimpleFormatter;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
 use Joli\JoliCi\Builder\DockerfileBuilder;
+use Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy;
+use Monolog\Handler\FingersCrossedHandler;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use TwigGenerator\Builder\Generator;
@@ -34,11 +36,16 @@ class Container
 
     public function getConsoleLogger($verbose = false)
     {
-        $logger  = new Logger("standalone-logger");
-        $handler = new StreamHandler("php://stdout", $verbose ? Logger::DEBUG : Logger::INFO);
+        $logger               = new Logger("standalone-logger");
+        $handler              = new StreamHandler("php://stdout", $verbose ? Logger::DEBUG : Logger::INFO);
+        $stdErrHandler        = new StreamHandler("php://stderr", Logger::DEBUG);
+        $fingerCrossedHandler = new FingersCrossedHandler($stdErrHandler, new ErrorLevelActivationStrategy(Logger::ERROR), 10);
+        $simpleFormatter      = new SimpleFormatter();
 
-        $handler->setFormatter(new SimpleFormatter());
+        $handler->setFormatter($simpleFormatter);
+        $stdErrHandler->setFormatter($simpleFormatter);
         $logger->pushHandler($handler);
+        $logger->pushHandler($fingerCrossedHandler);
 
         return $logger;
     }
@@ -48,12 +55,12 @@ class Container
         return new Docker(new DockerClient(array(), $entryPoint));
     }
 
-    public function getExecutor($dockerEntryPoint, $cache = true, $quiet = true, $timeout = 600)
+    public function getExecutor($dockerEntryPoint, $cache = true, $verbose = false, $timeout = 600)
     {
         //Set timeout in ini (not superb but only way with current docker php library)
         ini_set('default_socket_timeout', $timeout);
 
-        return new Executor($this->getConsoleLogger(!$quiet), $this->getDocker($dockerEntryPoint), $cache, $quiet);
+        return new Executor($this->getConsoleLogger($verbose), $this->getDocker($dockerEntryPoint), $cache, false);
     }
 
     public function getBuildPath()

@@ -51,9 +51,9 @@ class RunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container  = new Container();
-        $quiet      = !(OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
+        $verbose    = (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
         $builder    = $container->getBuilder();
-        $executor   = $container->getExecutor($input->getOption('docker-host'), !$input->getOption('no-cache'), $quiet, $input->getOption('timeout'));
+        $executor   = $container->getExecutor($input->getOption('docker-host'), !$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
         $filesystem = new Filesystem();
 
         $output->writeln("<info>Creating builds...</info>");

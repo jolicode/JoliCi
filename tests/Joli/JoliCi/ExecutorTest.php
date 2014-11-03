@@ -64,7 +64,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $config = $container->getConfig();
 
         $this->assertArrayHasKey("Image", $config);
-        $this->assertEquals("test", $config["Image"]);
+        $this->assertEquals("test:latest", $config["Image"]);
     }
 
     public function testRunTestWithCmdOverride()

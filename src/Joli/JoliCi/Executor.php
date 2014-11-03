@@ -72,13 +72,13 @@ class Executor
         $context  = new Context($directory);
         $error    = false;
 
-        $this->docker->build($context, $dockername, function ($output) use ($logger, &$error) {
+        $this->docker->build($context, $dockername, function ($output) use ($logger, &$error, $dockername) {
             $output    = json_decode($output, true);
             $message   = "";
 
             if (isset($output['error'])) {
-                $logger->addError($output['error'], array('static' => false, 'static-id' => null));
-
+                $logger->addError(sprintf("Error when building image %s : %s", $dockername, $output['error']), array('static' => false, 'static-id' => null));
+                $error = true;
                 return;
             }
 
