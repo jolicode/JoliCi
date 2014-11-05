@@ -56,7 +56,7 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
 
         foreach ($finder->in($joliCiDir) as $dir) {
             $buildName = $dir->getFilename();
-            $buildDir  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid().DIRECTORY_SEPARATOR.$buildName;
+            $buildDir  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid('jolici-').DIRECTORY_SEPARATOR.$buildName;
 
             //Recursive copy of the pull to this directory
             $this->filesystem->rcopy($directory, $buildDir, true);

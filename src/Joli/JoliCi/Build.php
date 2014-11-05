@@ -35,7 +35,7 @@ class Build
     {
         $this->name       = $name;
         $this->directory  = $directory;
-        $this->dockername = sprintf("%s-%s", uniqid(), $name);
+        $this->dockername = sprintf("%s-%s", uniqid('jolici-'), $name);
     }
 
     /**

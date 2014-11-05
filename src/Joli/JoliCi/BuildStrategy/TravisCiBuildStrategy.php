@@ -13,6 +13,7 @@ namespace Joli\JoliCi\BuildStrategy;
 use Joli\JoliCi\Build;
 use Joli\JoliCi\Builder\DockerfileBuilder;
 use Joli\JoliCi\Filesystem\Filesystem;
+use Joli\JoliCi\Matrix;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -89,17 +90,25 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $config     = Yaml::parse($directory.DIRECTORY_SEPARATOR.".travis.yml");
         $language   = isset($config['language']) ? $config['language'] : 'ruby';
         $versionKey = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
-        $buildRoot  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid();
+        $buildRoot  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid('jolici-');
 
         $envFromConfig = $this->getConfigValue($config, $language, "env");
-        $envs          = array();
 
-        foreach ($envFromConfig as $env) {
-            list($key, $value) = explode("=", $env);
-            $envs[$key] = $value;
-        }
+        $matrix = new Matrix();
+        $matrix->setDimension('environment', $envFromConfig);
+        $matrix->setDimension('version', $config[$versionKey]);
 
-        foreach ($config[$versionKey] as $version) {
+        foreach ($matrix->compute() as $possibility) {
+            $environment = array();
+            $version  = $possibility['version'];
+            $envVars  = explode(' ', $possibility['environment'] ?: '');
+
+            foreach ($envVars as $env) {
+                if (!empty($env)) {
+                    list($key, $value) = explode('=', $env);
+                    $environment[$key] = $value;
+                }
+            }
 
             $this->builder->setTemplateName(sprintf("%s/Dockerfile-%s.twig", $language, $version));
             $this->builder->setVariables(array(
@@ -107,11 +116,11 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                 'install'        => $this->getConfigValue($config, $language, 'install'),
                 'before_script'  => $this->getConfigValue($config, $language, 'before_script'),
                 'script'         => $this->getConfigValue($config, $language, 'script'),
-                'env'            => $envs
+                'env'            => $environment
             ));
 
             $buildName = sprintf("%s-%s", $language, $version);
-            $buildDir  = $buildRoot.DIRECTORY_SEPARATOR.$buildName;
+            $buildDir  = $buildRoot . DIRECTORY_SEPARATOR . $buildName;
 
             // Recursive copy of the pull to this directory
             $this->filesystem->rcopy($directory, $buildDir, true);
