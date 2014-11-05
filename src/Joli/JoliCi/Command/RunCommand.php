@@ -11,7 +11,6 @@
 namespace Joli\JoliCi\Command;
 
 use Joli\JoliCi\Container;
-use Joli\JoliCi\Filesystem\Filesystem;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -52,9 +51,9 @@ class RunCommand extends Command
     {
         $container  = new Container();
         $verbose    = (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
-        $builder    = $container->getBuilder();
+        $builder    = $container->getBuilder($input->getOption('project-path'));
         $executor   = $container->getExecutor($input->getOption('docker-host'), !$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
-        $filesystem = new Filesystem();
+        $filesystem = $container->getFilesystem($input->getOption('project-path'));
 
         $output->writeln("<info>Creating builds...</info>");
         $builds = $builder->createBuilds($input->getOption("project-path"));

@@ -14,6 +14,17 @@ use Symfony\Component\Filesystem\Filesystem as BaseFilesystem;
 
 class Filesystem extends BaseFilesystem
 {
+    private $excludePaths;
+
+    public function __construct($excludePaths = array())
+    {
+        if (is_string($excludePaths)) {
+            $excludePaths = array($excludePaths);
+        }
+
+        $this->excludePaths = $excludePaths;
+    }
+
     /**
      * Recursive copy
      *
@@ -24,6 +35,12 @@ class Filesystem extends BaseFilesystem
     public function rcopy($originFile, $targetFile, $override = false)
     {
         $cwd = getcwd();
+
+        foreach ($this->excludePaths as $exclude) {
+            if (false !== strpos(realpath($originFile), $exclude)) {
+                return;
+            }
+        }
 
         if (!is_dir($originFile)) {
             $this->copy($originFile, $targetFile, $override);

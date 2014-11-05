@@ -4,6 +4,7 @@ namespace Joli\JoliCi;
 
 use Docker\Docker;
 use Docker\Http\DockerClient;
+use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Log\SimpleFormatter;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
@@ -16,7 +17,7 @@ use TwigGenerator\Builder\Generator;
 
 class Container
 {
-    public function getTravisCiStrategy()
+    public function getTravisCiStrategy($projectPath)
     {
         $builder   = new DockerfileBuilder();
         $generator = new Generator();
@@ -26,12 +27,12 @@ class Container
         $generator->setMustOverwriteIfExists(true);
         $generator->addBuilder($builder);
 
-        return new TravisCiBuildStrategy($builder, $this->getBuildPath());
+        return new TravisCiBuildStrategy($builder, $this->getBuildPath($projectPath), $this->getFilesystem($projectPath));
     }
 
-    public function getJoliCiStrategy()
+    public function getJoliCiStrategy($projectPath)
     {
-        return new JoliCiBuildStrategy($this->getBuildPath());
+        return new JoliCiBuildStrategy($this->getBuildPath($projectPath), $this->getFilesystem($projectPath));
     }
 
     public function getConsoleLogger($verbose = false)
@@ -50,6 +51,11 @@ class Container
         return $logger;
     }
 
+    public function getFilesystem($projectPath)
+    {
+        return new Filesystem($this->getBuildPath($projectPath));
+    }
+
     public function getDocker($entryPoint = "unix:///var/run/docker.sock")
     {
         return new Docker(new DockerClient(array(), $entryPoint));
@@ -63,16 +69,16 @@ class Container
         return new Executor($this->getConsoleLogger($verbose), $this->getDocker($dockerEntryPoint), $cache, false);
     }
 
-    public function getBuildPath()
+    public function getBuildPath($projectPath)
     {
-        return sys_get_temp_dir().DIRECTORY_SEPARATOR."jolici-builds";
+        return realpath($projectPath).DIRECTORY_SEPARATOR.".jolici-builds";
     }
 
-    public function getBuilder()
+    public function getBuilder($projectPath)
     {
         $builder = new Builder();
-        $builder->pushStrategy($this->getJoliCiStrategy());
-        $builder->pushStrategy($this->getTravisCiStrategy());
+        $builder->pushStrategy($this->getJoliCiStrategy($projectPath));
+        $builder->pushStrategy($this->getTravisCiStrategy($projectPath));
 
         return $builder;
     }
