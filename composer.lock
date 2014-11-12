@@ -36,7 +36,7 @@
             ],
             "authors": [
                 {
-                    "name": "Cédric Lombardot",
+                    "name": "Cedric LOMBARDOT",
                     "email": "cedric.lombardot@gmail.com"
                 },
                 {
@@ -281,16 +281,16 @@
         },
         {
             "name": "stage1/docker-php",
-            "version": "v0.2.2",
+            "version": "v0.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stage1/docker-php.git",
-                "reference": "9472b1257c0ae434be77823b4284ec10de4a6538"
+                "reference": "31ff9f4af91dc8eb548a1ab4851d04eee02c61e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stage1/docker-php/zipball/9472b1257c0ae434be77823b4284ec10de4a6538",
-                "reference": "9472b1257c0ae434be77823b4284ec10de4a6538",
+                "url": "https://api.github.com/repos/stage1/docker-php/zipball/31ff9f4af91dc8eb548a1ab4851d04eee02c61e0",
+                "reference": "31ff9f4af91dc8eb548a1ab4851d04eee02c61e0",
                 "shasum": ""
             },
             "require": {
@@ -314,7 +314,7 @@
                 "MIT"
             ],
             "description": "A Docker PHP client",
-            "time": "2014-11-03 16:46:02"
+            "time": "2014-11-12 17:01:45"
         },
         {
             "name": "symfony/console",
@@ -564,12 +564,12 @@
             "version": "v1.16.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/fabpot/Twig.git",
+                "url": "https://github.com/twigphp/Twig.git",
                 "reference": "42f758d9fe2146d1f0470604fc05ee43580873fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fabpot/Twig/zipball/42f758d9fe2146d1f0470604fc05ee43580873fc",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/42f758d9fe2146d1f0470604fc05ee43580873fc",
                 "reference": "42f758d9fe2146d1f0470604fc05ee43580873fc",
                 "shasum": ""
             },

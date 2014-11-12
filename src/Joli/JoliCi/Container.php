@@ -58,7 +58,7 @@ class Container
 
     public function getDocker($entryPoint = "unix:///var/run/docker.sock")
     {
-        return new Docker(new DockerClient(array(), $entryPoint));
+        return new Docker(DockerClient::createWithEnv());
     }
 
     public function getExecutor($dockerEntryPoint, $cache = true, $verbose = false, $timeout = 600)
