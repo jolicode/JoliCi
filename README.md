@@ -16,7 +16,7 @@ Thanks to the use of Docker, all kind of projects can be tested with this CI (no
 
 ## Installation
 
-You can install JoliCi by either downloading [`jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.3/jolici.phar) or by installing it via [composer](https://getcomposer.org/).  For example:
+You can install JoliCi by either downloading [`jolici.phar`](https://github.com/jolicode/JoliCi/releases/download/v0.2.4/jolici.phar) or by installing it via [composer](https://getcomposer.org/).  For example:
 
 ```
 composer global require jolicode/jolici:*
