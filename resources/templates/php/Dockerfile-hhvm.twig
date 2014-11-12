@@ -1,10 +1,14 @@
 {% extends "Dockerfile-travis.twig" %}
 
+{% block from %}
+FROM jolicode/hhvm:latest
+{% endblock %}
+
 {% block env %}
 {{ parent() }}
 ENV TRAVIS_PHP_VERSION hhvm
 {% endblock %}
 
-{% block from %}
-FROM jolicode/hhvm
+{% block before_install %}
+RUN echo 'date.timezone={{ timezone }}' >> /etc/hhvm/php.ini
 {% endblock %}

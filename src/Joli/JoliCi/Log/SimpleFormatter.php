@@ -35,7 +35,7 @@ class SimpleFormatter implements FormatterInterface
             if (!isset($this->static[$id])) {
                 $this->static[$id] = array(
                     'current_line' => count($this->static),
-                    'message'      => $message
+                    'message'      => $message,
                 );
 
                 $message = sprintf("%s\n", $message);

@@ -4,6 +4,7 @@ namespace Joli\JoliCi;
 
 use Docker\Docker;
 use Docker\Http\DockerClient;
+use Joli\JoliCi\BuildStrategy\ChainBuildStrategy;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Log\SimpleFormatter;
 use Joli\JoliCi\BuildStrategy\TravisCiBuildStrategy;
@@ -17,69 +18,115 @@ use TwigGenerator\Builder\Generator;
 
 class Container
 {
-    public function getTravisCiStrategy($projectPath)
+    /**
+     * Strategy based on the ".travis.yml" file
+     *
+     * @return TravisCiBuildStrategy
+     */
+    public function getTravisCiStrategy()
     {
         $builder   = new DockerfileBuilder();
         $generator = new Generator();
         $generator->setTemplateDirs(array(
-            __DIR__."/../../../resources/templates"
+            __DIR__."/../../../resources/templates",
         ));
         $generator->setMustOverwriteIfExists(true);
         $generator->addBuilder($builder);
 
-        return new TravisCiBuildStrategy($builder, $this->getBuildPath($projectPath), $this->getFilesystem($projectPath));
+        return new TravisCiBuildStrategy($builder, $this->getBuildPath(), $this->getNaming(), $this->getFilesystem());
     }
 
-    public function getJoliCiStrategy($projectPath)
+    /**
+     * Strategy based on the ".jolici" folder
+     *
+     * @return JoliCiBuildStrategy
+     */
+    public function getJoliCiStrategy()
     {
-        return new JoliCiBuildStrategy($this->getBuildPath($projectPath), $this->getFilesystem($projectPath));
+        return new JoliCiBuildStrategy($this->getBuildPath(), $this->getNaming(), $this->getFilesystem());
     }
 
+    /**
+     * Chain strategy to allow multiples ones
+     *
+     * @return ChainBuildStrategy
+     */
+    public function getChainStrategy()
+    {
+        $strategy = new ChainBuildStrategy();
+        $strategy->pushStrategy($this->getTravisCiStrategy());
+        $strategy->pushStrategy($this->getJoliCiStrategy());
+
+        return $strategy;
+    }
+
+    /**
+     * Alias for the main strategy
+     *
+     * @return \Joli\JoliCi\BuildStrategy\BuildStrategyInterface
+     */
+    public function getStrategy()
+    {
+        return $this->getChainStrategy();
+    }
+
+    /**
+     * Get a console with finger crossed handler
+     *
+     * @param bool $verbose
+     *
+     * @return Logger
+     */
     public function getConsoleLogger($verbose = false)
     {
         $logger               = new Logger("standalone-logger");
         $handler              = new StreamHandler("php://stdout", $verbose ? Logger::DEBUG : Logger::INFO);
-        $stdErrHandler        = new StreamHandler("php://stderr", Logger::DEBUG);
-        $fingerCrossedHandler = new FingersCrossedHandler($stdErrHandler, new ErrorLevelActivationStrategy(Logger::ERROR), 10);
         $simpleFormatter      = new SimpleFormatter();
 
         $handler->setFormatter($simpleFormatter);
-        $stdErrHandler->setFormatter($simpleFormatter);
         $logger->pushHandler($handler);
-        $logger->pushHandler($fingerCrossedHandler);
+
+        if (!$verbose) {
+            $stdErrHandler = new StreamHandler("php://stderr", Logger::DEBUG);
+            $fingerCrossedHandler = new FingersCrossedHandler($stdErrHandler, new ErrorLevelActivationStrategy(Logger::ERROR), 10);
+
+            $logger->pushHandler($fingerCrossedHandler);
+            $stdErrHandler->setFormatter($simpleFormatter);
+        }
 
         return $logger;
     }
 
-    public function getFilesystem($projectPath)
+    public function getVacuum()
     {
-        return new Filesystem($this->getBuildPath($projectPath));
+        return new Vacuum($this->getDocker(), $this->getNaming(), $this->getStrategy(), $this->getFilesystem(), $this->getBuildPath());
     }
 
-    public function getDocker($entryPoint = "unix:///var/run/docker.sock")
+    public function getFilesystem()
+    {
+        return new Filesystem();
+    }
+
+    public function getDocker()
     {
         return new Docker(DockerClient::createWithEnv());
     }
 
-    public function getExecutor($dockerEntryPoint, $cache = true, $verbose = false, $timeout = 600)
+    public function getExecutor($cache = true, $verbose = false, $timeout = 600)
     {
         //Set timeout in ini (not superb but only way with current docker php library)
         ini_set('default_socket_timeout', $timeout);
 
-        return new Executor($this->getConsoleLogger($verbose), $this->getDocker($dockerEntryPoint), $cache, false);
+        return new Executor($this->getConsoleLogger($verbose), $this->getDocker(), $cache, false);
     }
 
-    public function getBuildPath($projectPath)
+    public function getBuildPath()
     {
-        return realpath($projectPath).DIRECTORY_SEPARATOR.".jolici-builds";
+        return sys_get_temp_dir().DIRECTORY_SEPARATOR.".jolici-builds";
     }
 
-    public function getBuilder($projectPath)
+    public function getNaming()
     {
-        $builder = new Builder();
-        $builder->pushStrategy($this->getJoliCiStrategy($projectPath));
-        $builder->pushStrategy($this->getTravisCiStrategy($projectPath));
-
-        return $builder;
+        return new Naming();
     }
 }

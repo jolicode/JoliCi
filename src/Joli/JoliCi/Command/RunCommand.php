@@ -20,58 +20,57 @@ use Symfony\Component\Console\Input\InputOption;
 class RunCommand extends Command
 {
     /**
-     * @var string Base path for resources
-     */
-    private $resourcesPath;
-
-    public function __construct($resourcesPath)
-    {
-        parent::__construct();
-
-        $this->resourcesPath = $resourcesPath;
-    }
-
-    /**
-     * Configures the current command.
+     * {@inheritdoc}
      */
     protected function configure()
     {
-        $defaultDockerHost = getenv('DOCKER_HOST') ?: "unix:///var/run/docker.sock";
-
         $this->setName('run');
         $this->setDescription('Run tests on your project');
-        $this->addOption('project-path', 'p', InputOption::VALUE_OPTIONAL, "Path where you project is", ".");
+        $this->addOption('project-path', 'p', InputOption::VALUE_OPTIONAL, "Path where you project is (default to current directory)", ".");
+        $this->addOption('keep', 'k', InputOption::VALUE_OPTIONAL, "Number of images / containers / directories per build to keep when cleaning at the end of run", 1);
         $this->addOption('no-cache', null, InputOption::VALUE_NONE, "Do not use cache of docker");
         $this->addOption('timeout', null, InputOption::VALUE_OPTIONAL, "Timeout for docker client in seconds (default to 5 minutes)", "300");
-        $this->addOption('docker-host', null, InputOption::VALUE_OPTIONAL, "Docker server location", $defaultDockerHost);
         $this->addArgument('cmd', InputArgument::OPTIONAL, "Override test command");
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container  = new Container();
         $verbose    = (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
-        $builder    = $container->getBuilder($input->getOption('project-path'));
-        $executor   = $container->getExecutor($input->getOption('docker-host'), !$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
-        $filesystem = $container->getFilesystem($input->getOption('project-path'));
+        $strategy   = $container->getChainStrategy();
+        $executor   = $container->getExecutor(!$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
 
         $output->writeln("<info>Creating builds...</info>");
-        $builds = $builder->createBuilds($input->getOption("project-path"));
+
+        $builds = $strategy->getBuilds($input->getOption("project-path"));
+
         $output->writeln(sprintf("<info>%s builds created</info>", count($builds)));
 
-        foreach ($builds as $build) {
-            $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getName()));
+        $exitCode = 0;
 
-            if ($executor->runBuild($build->getDirectory(), $build->getDockerName())) {
-                $executor->runTest($build->getDockerName(), $input->getArgument('cmd'));
+        try {
+            foreach ($builds as $build) {
+                $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getDescription()));
+
+                $strategy->prepareBuild($build);
+
+                if ($executor->runBuild($container->getBuildPath().DIRECTORY_SEPARATOR.$build->getDirectory(), $build->getName())) {
+                    $exitCode += $executor->runTest($build->getName(), $input->getArgument('cmd'))->getExitCode();
+                }
             }
-
-            $filesystem->remove($build->getDirectory());
+        } catch (\Exception $e) {
+            // We do not deal with exception (Console Component do it well), we just catch it to allow cleaner to be runned even if one of the build failed hard
         }
 
-        // Remove parent folder
-        if (count($builds) > 0) {
-            rmdir(dirname($build->getDirectory()));
+        $container->getVacuum()->clean($input->getOption("project-path"), $input->getOption("keep"));
+
+        if (isset($e)) {
+            throw $e;
         }
+
+        return $exitCode;
     }
 }

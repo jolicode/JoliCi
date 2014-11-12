@@ -10,6 +10,8 @@
 
 namespace Joli\JoliCi\BuildStrategy;
 
+use Joli\JoliCi\Build;
+
 /**
  * Interface that all Build strategy must implement
  *
@@ -20,13 +22,22 @@ interface BuildStrategyInterface
     const WORKDIR = "/home/project";
 
     /**
-     * Create builds for a project
+     * Create / Get builds for a project
      *
      * @param string $directory Location of project
      *
-     * @return Build[] Return a list of build to create
+     * @return \Joli\JoliCi\Build[] Return a list of build to create
      */
-    public function createBuilds($directory);
+    public function getBuilds($directory);
+
+    /**
+     * Prepare a build (generally copy its files to a new directory
+     *
+     * @param \Joli\JoliCi\Build $build
+     *
+     * @return void
+     */
+    public function prepareBuild(Build $build);
 
     /**
      * Return name of the build

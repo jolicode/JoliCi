@@ -20,7 +20,8 @@
         "monolog/monolog": "~1.6",
         "stage1/docker-php": "~0.2.1",
         "cedriclombardot/twig-generator": "~1.0.0",
-        "guzzlehttp/streams": "~1.3.0"
+        "guzzlehttp/streams": "~1.3.0",
+        "behat/transliterator": "~1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~3.7",
