@@ -12,6 +12,7 @@ namespace Joli\JoliCi\BuildStrategy;
 
 use Joli\JoliCi\Build;
 use Joli\JoliCi\Filesystem\Filesystem;
+use Joli\JoliCi\Naming;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -34,55 +35,93 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
     private $filesystem;
 
     /**
-     * @param string $buildPath
-     * @param Filesystem|null $filesystem
+     * @var Naming Use to name the image created
      */
-    public function __construct($buildPath, Filesystem $filesystem = null)
+    private $naming;
+
+    /**
+     * @param string     $buildPath  Directory where build must be created
+     * @param Naming     $naming     Naming service
+     * @param Filesystem $filesystem Filesystem service
+     */
+    public function __construct($buildPath, Naming $naming, Filesystem $filesystem)
     {
         $this->buildPath  = $buildPath;
-        $this->filesystem = $filesystem ?: new Filesystem();
+        $this->naming     = $naming;
+        $this->filesystem = $filesystem;
     }
 
-    /*
+    /**
      * {@inheritdoc}
      */
-    public function createBuilds($directory)
+    public function getBuilds($directory)
     {
         $builds = array();
         $finder = new Finder();
         $finder->directories();
 
-        $joliCiDir = $directory.DIRECTORY_SEPARATOR.".jolici";
-
-        foreach ($finder->in($joliCiDir) as $dir) {
-            $buildName = $dir->getFilename();
-            $buildDir  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid('jolici-').DIRECTORY_SEPARATOR.$buildName;
-
-            //Recursive copy of the pull to this directory
-            $this->filesystem->rcopy($directory, $buildDir, true);
-
-            //Recursive copy of content of the build dir to the root dir
-            $this->filesystem->rcopy($dir->getRealPath(), $buildDir, true);
-
-            $builds[] = new Build($buildName, $buildDir);
+        foreach ($finder->in($this->getJoliCiStrategyDirectory($directory)) as $dir) {
+            $builds[] = new Build(
+                $this->naming->getProjectName($directory),
+                $this->getName(),
+                $this->naming->getUniqueKey(array('build' => $dir->getFilename())),
+                array(
+                    'origin' => $directory,
+                    'build'  => $dir->getRealPath(),
+                ),
+                "JoliCi Build: ".$dir->getFilename()
+            );
         }
 
         return $builds;
     }
 
-    /*
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareBuild(Build $build)
+    {
+        $origin = $build->getParameters()['origin'];
+        $target = $this->buildPath.DIRECTORY_SEPARATOR.$build->getDirectory();
+        $build  = $build->getParameters()['build'];
+
+        // First mirroring target
+        $this->filesystem->mirror($origin, $target, null, array(
+            'delete'   => true,
+            'override' => true,
+        ));
+
+        // Second override target with build dir
+        $this->filesystem->mirror($build, $target, null, array(
+            'delete'   => false,
+            'override' => true,
+        ));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getName()
     {
-        return "jolici";
+        return "JoliCi";
     }
 
-    /*
+    /**
      * {@inheritdoc}
      */
     public function supportProject($directory)
     {
-        return file_exists($directory.DIRECTORY_SEPARATOR.".jolici") && is_dir($directory.DIRECTORY_SEPARATOR.".jolici");
+        return file_exists($this->getJoliCiStrategyDirectory($directory)) && is_dir($this->getJoliCiStrategyDirectory($directory));
+    }
+
+    /**
+     * Return the jolici strategy directory where there must be builds
+     *
+     * @param  string $projectPath
+     * @return string
+     */
+    protected function getJoliCiStrategyDirectory($projectPath)
+    {
+        return $projectPath.DIRECTORY_SEPARATOR.'.jolici';
     }
 }

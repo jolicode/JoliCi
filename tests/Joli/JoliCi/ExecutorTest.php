@@ -57,7 +57,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->method('run')
             ->will($this->returnSelf());
 
-        $container = $this->executor->runTest("test");
+        $container = $this->executor->runTest("test:latest");
 
         $this->assertInstanceOf('\Docker\Container', $container);
 
@@ -85,7 +85,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->method('wait')
             ->will($this->returnSelf());
 
-        $container = $this->executor->runTest("test", array("phpunit"));
+        $container = $this->executor->runTest("test:latest", array("phpunit"));
 
         $config = $container->getConfig();
 
@@ -111,7 +111,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->method('wait')
             ->will($this->returnSelf());
 
-        $container = $this->executor->runTest("test", "phpunit");
+        $container = $this->executor->runTest("test:latest", "phpunit");
 
         $config = $container->getConfig();
 

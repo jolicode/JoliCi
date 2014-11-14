@@ -1,12 +1,12 @@
 <?php
 /*
  * This file is part of JoliCi.
-*
-* (c) Joel Wurtz <jwurtz@jolicode.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * (c) Joel Wurtz <jwurtz@jolicode.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Joli\JoliCi\BuildStrategy;
 
@@ -14,8 +14,8 @@ use Joli\JoliCi\Build;
 use Joli\JoliCi\Builder\DockerfileBuilder;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Matrix;
+use Joli\JoliCi\Naming;
 use Symfony\Component\Yaml\Yaml;
-
 
 /**
  * TravisCi implementation for build
@@ -27,7 +27,7 @@ use Symfony\Component\Yaml\Yaml;
 class TravisCiBuildStrategy implements BuildStrategyInterface
 {
     private $languageVersionKeyMapping = array(
-        'ruby' => 'rvm'
+        'ruby' => 'rvm',
     );
 
     private $defaults = array(
@@ -36,21 +36,21 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'install'        => array('composer install'),
             'before_script'  => array(),
             'script'         => array('phpunit'),
-            'env'            => array()
+            'env'            => array(),
         ),
         'ruby' => array(
             'before_install' => array(),
             'install'        => array('bundle install'),
             'before_script'  => array(),
             'script'         => array('bundle exec rake'),
-            'env'            => array()
+            'env'            => array(),
         ),
         'node_js' => array(
             'before_install' => array(),
             'install'        => array('npm install'),
             'before_script'  => array(),
             'script'         => array('npm test'),
-            'env'            => array()
+            'env'            => array(),
         ),
     );
 
@@ -70,85 +70,94 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private $filesystem;
 
     /**
-     * @param DockerfileBuilder $builder
-     * @param string $buildPath
-     * @param Filesystem|null $filesystem
+     * @var \Joli\JoliCi\Naming Naming service to create docker name for images
      */
-    public function __construct(DockerfileBuilder $builder, $buildPath, Filesystem $filesystem = null)
+    private $naming;
+
+    /**
+     * @param DockerfileBuilder $builder    Twig Builder for Dockerfile
+     * @param string            $buildPath  Directory where builds are created
+     * @param Naming            $naming     Naming service
+     * @param Filesystem        $filesystem Filesystem service
+     */
+    public function __construct(DockerfileBuilder $builder, $buildPath, Naming $naming, Filesystem $filesystem)
     {
         $this->builder    = $builder;
-        $this->filesystem = $filesystem ?: new Filesystem();
         $this->buildPath  = $buildPath;
+        $this->naming     = $naming;
+        $this->filesystem = $filesystem;
     }
 
-    /*
+    /**
      * {@inheritdoc}
      */
-    public function createBuilds($directory)
+    public function getBuilds($directory)
     {
         $builds     = array();
-        $config     = Yaml::parse($directory.DIRECTORY_SEPARATOR.".travis.yml");
-        $language   = isset($config['language']) ? $config['language'] : 'ruby';
-        $versionKey = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
-        $buildRoot  = $this->buildPath.DIRECTORY_SEPARATOR.uniqid('jolici-');
-
-        $envFromConfig = $this->getConfigValue($config, $language, "env");
-
-        $matrix = new Matrix();
-        $matrix->setDimension('environment', $envFromConfig);
-        $matrix->setDimension('version', $config[$versionKey]);
+        $config     = Yaml::parse(file_get_contents($directory.DIRECTORY_SEPARATOR.".travis.yml"));
+        $matrix     = $this->createMatrix($config);
+        $timezone   = ini_get('date.timezone');
 
         foreach ($matrix->compute() as $possibility) {
-            $environment = array();
-            $version  = $possibility['version'];
-            $envVars  = explode(' ', $possibility['environment'] ?: '');
+            $parmeters   = array(
+                'language' => $possibility['language'],
+                'version' => $possibility['version'],
+                'environment' => $possibility['environment'],
+            );
 
-            foreach ($envVars as $env) {
-                if (!empty($env)) {
-                    list($key, $value) = explode('=', $env);
-                    $environment[$key] = $value;
-                }
+            $description = sprintf('%s = %s', $possibility['language'], $possibility['version']);
+
+            if ($possibility['environment'] !== null) {
+                $description .= sprintf(', Environment: %s', json_encode($possibility['environment']));
             }
 
-            $this->builder->setTemplateName(sprintf("%s/Dockerfile-%s.twig", $language, $version));
-            $this->builder->setVariables(array(
-                'before_install' => $this->getConfigValue($config, $language, 'before_install'),
-                'install'        => $this->getConfigValue($config, $language, 'install'),
-                'before_script'  => $this->getConfigValue($config, $language, 'before_script'),
-                'script'         => $this->getConfigValue($config, $language, 'script'),
-                'env'            => $environment
-            ));
-
-            $buildName = sprintf("%s-%s", $language, $version);
-            $buildDir  = $buildRoot . DIRECTORY_SEPARATOR . $buildName;
-
-            // Recursive copy of the pull to this directory
-            $this->filesystem->rcopy($directory, $buildDir, true);
-
-            $this->builder->setOutputName('Dockerfile');
-
-            try {
-                $this->builder->writeOnDisk($buildDir);
-
-                $builds[] = new Build($buildName, $buildDir);
-            } catch (\Twig_Error_Loader $e) {
-                // TODO: template does not exist so language-php is not supported by JoliCI (emit a warning ?)
-                $this->filesystem->remove($buildDir);
-            }
+            $builds[] = new Build($this->naming->getProjectName($directory), $this->getName(), $this->naming->getUniqueKey($parmeters), array(
+                'language'       => $possibility['language'],
+                'version'        => $possibility['version'],
+                'before_install' => $possibility['before_install'],
+                'install'        => $possibility['install'],
+                'before_script'  => $possibility['before_script'],
+                'script'         => $possibility['script'],
+                'env'            => $possibility['environment'],
+                'timezone'       => $timezone,
+                'origin'         => realpath($directory),
+            ), $description);
         }
 
         return $builds;
     }
 
-    /*
+    /**
+     * {@inheritdoc}
+     */
+    public function prepareBuild(Build $build)
+    {
+        $parameters = $build->getParameters();
+        $origin     = $parameters['origin'];
+        $target     = $this->buildPath.DIRECTORY_SEPARATOR.$build->getDirectory();
+
+        // First mirroring target
+        $this->filesystem->mirror($origin, $target, null, array(
+            'delete' => true,
+            'override' => true,
+        ));
+
+        // Create dockerfile
+        $this->builder->setTemplateName(sprintf("%s/Dockerfile-%s.twig", $parameters['language'], $parameters['version']));
+        $this->builder->setVariables($parameters);
+        $this->builder->setOutputName('Dockerfile');
+        $this->builder->writeOnDisk($target);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getName()
     {
-        return "travisci";
+        return "TravisCi";
     }
 
-    /*
+    /**
      * {@inheritdoc}
      */
     public function supportProject($directory)
@@ -180,5 +189,63 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         }
 
         return $config[$key];
+    }
+
+    /**
+     * Create matrix of build
+     *
+     * @param array $config
+     *
+     * @return Matrix
+     */
+    protected function createMatrix($config)
+    {
+        $language         = isset($config['language']) ? $config['language'] : 'ruby';
+        $versionKey       = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
+        $environmentLines = $this->getConfigValue($config, $language, "env");
+        $environnements   = array();
+
+        // Parsing environnements
+        foreach ($environmentLines as $environmentLine) {
+            $environnements[] = $this->parseEnvironmentVariables($environmentLine);
+        }
+
+        $matrix = new Matrix();
+        $matrix->setDimension('language', array($language));
+        $matrix->setDimension('environment', $environnements);
+        $matrix->setDimension('version', $config[$versionKey]);
+        $matrix->setDimension('before_install', array($this->getConfigValue($config, $language, 'before_install')));
+        $matrix->setDimension('install', array($this->getConfigValue($config, $language, 'install')));
+        $matrix->setDimension('before_script', array($this->getConfigValue($config, $language, 'before_script')));
+        $matrix->setDimension('script', array($this->getConfigValue($config, $language, 'script')));
+
+        return $matrix;
+    }
+
+    /**
+     * Parse an environnement line from Travis to return an array of variables
+     *
+     * Transform:
+     *   "A=B C=D"
+     * Into:
+     *   array('a' => 'b', 'c' => 'd')
+     *
+     * @param $environmentLine
+     * @return array
+     */
+    private function parseEnvironmentVariables($environmentLine)
+    {
+        $variables     = array();
+        $variableLines = explode(' ', $environmentLine ?: '');
+
+        foreach ($variableLines as $variableLine) {
+            if (!empty($variableLine)) {
+                list($key, $value) = explode('=', $variableLine);
+
+                $variables[$key] = $value;
+            }
+        }
+
+        return $variables;
     }
 }

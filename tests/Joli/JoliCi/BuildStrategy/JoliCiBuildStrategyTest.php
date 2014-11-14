@@ -3,6 +3,7 @@
 namespace Joli\JoliCi;
 
 use Joli\JoliCi\BuildStrategy\JoliCiBuildStrategy;
+use Joli\JoliCi\Filesystem\Filesystem;
 use org\bovigo\vfs\vfsStream;
 
 class JoliCiBuildStrategyTest extends \PHPUnit_Framework_TestCase
@@ -10,25 +11,29 @@ class JoliCiBuildStrategyTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->buildPath = vfsStream::setup('build-path');
-        $this->strategy = new JoliCiBuildStrategy(vfsStream::url('build-path'));
+        $this->strategy = new JoliCiBuildStrategy(vfsStream::url('build-path'), new Naming(), new Filesystem());
     }
 
     public function testCreateBuilds()
     {
-        $builds  = $this->strategy->createBuilds(__DIR__.DIRECTORY_SEPARATOR."fixtures".DIRECTORY_SEPARATOR."jolici".DIRECTORY_SEPARATOR."project1");
+        $builds  = $this->strategy->getBuilds(__DIR__.DIRECTORY_SEPARATOR."fixtures".DIRECTORY_SEPARATOR."jolici".DIRECTORY_SEPARATOR."project1");
 
         $this->assertCount(1, $builds);
+    }
 
+    public function testPrepareBuild()
+    {
+        $builds = $this->strategy->getBuilds(__DIR__.DIRECTORY_SEPARATOR."fixtures".DIRECTORY_SEPARATOR."jolici".DIRECTORY_SEPARATOR."project1");
         $build = $builds[0];
 
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())));
-        $this->assertContains("test", $build->getDockerName());
+        $this->strategy->prepareBuild($build);
 
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())."/Dockerfile"));
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())."/foo"));
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())."/.jolici"));
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())."/.jolici/test"));
-        $this->assertTrue($this->buildPath->hasChild(vfsStream::path($build->getDirectory())."/.jolici/test/Dockerfile"));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())."/Dockerfile"));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())."/foo"));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())."/.jolici"));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())."/.jolici/test"));
+        $this->assertTrue($this->buildPath->hasChild(vfsStream::path(vfsStream::url('build-path') . DIRECTORY_SEPARATOR . $build->getDirectory())."/.jolici/test/Dockerfile"));
     }
 
     public function testSupportTrue()

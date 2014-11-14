@@ -59,8 +59,8 @@ class Executor
     /**
      * Run build command
      *
-     * @param string $directory           Directory where the project to build is
-     * @param string $dockername          Name of the docker image to create
+     * @param string $directory  Directory where the project to build is
+     * @param string $dockername Name of the docker image to create
      *
      * @return boolean Return true on build success, false otherwise
      */
@@ -79,6 +79,7 @@ class Executor
             if (isset($output['error'])) {
                 $logger->addError(sprintf("Error when building image %s : %s", $dockername, $output['error']), array('static' => false, 'static-id' => null));
                 $error = true;
+
                 return;
             }
 
@@ -96,9 +97,9 @@ class Executor
 
             $logger->addDebug($message, array(
                 'static'    => isset($output['id']),
-                'static-id' => isset($output['id']) ? $output['id'] : null
+                'static-id' => isset($output['id']) ? $output['id'] : null,
             ));
-        }, $this->quietBuild, $this->usecache, false, false);
+        }, $this->quietBuild, $this->usecache, true);
 
         $logger->addDebug("", array('clear-static' => true));
 
@@ -108,32 +109,29 @@ class Executor
     /**
      * Run default command for DockerContainer
      *
-     * @param string        $dockername  Name of docker image
-     * @param string|array  $cmdOverride Override default command with this one
+     * @param string       $dockername  Name of docker image
+     * @param string|array $cmdOverride Override default command with this one
      *
      * @return DockerContainer return the container executed
      */
     public function runTest($dockername, $cmdOverride = array())
     {
-        $logger = $this->logger;
+        $logger           = $this->logger;
+        list($repo, $tag) = explode(':', $dockername);
 
         // Execute test
         $config = array();
-        $image = new Image();
-        $image->setRepository($dockername);
 
         if (is_string($cmdOverride)) {
             $cmdOverride = array('/bin/bash', '-c', $cmdOverride);
         }
 
-        $config['Cmd'] = $cmdOverride;
+        if (!empty($cmdOverride)) {
+            $config['Cmd'] = $cmdOverride;
+        }
 
         $container = new DockerContainer($config);
-        $container->setImage($image);
-
-        // Find better way to pass timeout
-        $currentTimeout = ini_get('default_socket_timeout');
-        ini_set('default_socket_timeout', $this->timeout);
+        $container->setImage(new Image($repo, $tag));
 
         $this->docker->getContainerManager()->run($container, function ($content, $type) use ($logger) {
             if ($type === 2) {
@@ -141,9 +139,7 @@ class Executor
             } else {
                 $logger->addInfo($content);
             }
-        });
-
-        ini_set('default_socket_timeout', $currentTimeout);
+        }, array(), false, $this->timeout);
 
         return $container;
     }

@@ -2,6 +2,7 @@
 <?php
 
 use Joli\JoliCi\Command\RunCommand;
+use Joli\JoliCi\Command\CleanCommand;
 use Symfony\Component\Console\Application;
 use cbednarski\Pharcc\Git;
 
@@ -20,6 +21,8 @@ if (class_exists("\cbednarski\Pharcc\Git")) {
 }
 
 $application = new Application('jolici', $version);
-$application->add(new RunCommand(__DIR__.'/../resources'));
+
+$application->add(new RunCommand());
+$application->add(new CleanCommand());
 
 $application->run();
