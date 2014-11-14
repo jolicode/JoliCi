@@ -10,8 +10,7 @@ matrix:
     allow_failures:
         - php: hhvm
 
-
 before_script:
     - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source install
-    
+
 script: phpunit

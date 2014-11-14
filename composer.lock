@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "37db2becbc494295ec3fea3135c11eab",
+    "hash": "b4c96121d29d806b6c992859a5d3ad14",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -321,16 +321,16 @@
         },
         {
             "name": "stage1/docker-php",
-            "version": "v0.2.3",
+            "version": "v0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stage1/docker-php.git",
-                "reference": "31ff9f4af91dc8eb548a1ab4851d04eee02c61e0"
+                "reference": "73e3245ee6f79fcdd7e77333699975b1c55eee4a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stage1/docker-php/zipball/31ff9f4af91dc8eb548a1ab4851d04eee02c61e0",
-                "reference": "31ff9f4af91dc8eb548a1ab4851d04eee02c61e0",
+                "url": "https://api.github.com/repos/stage1/docker-php/zipball/73e3245ee6f79fcdd7e77333699975b1c55eee4a",
+                "reference": "73e3245ee6f79fcdd7e77333699975b1c55eee4a",
                 "shasum": ""
             },
             "require": {
@@ -354,7 +354,7 @@
                 "MIT"
             ],
             "description": "A Docker PHP client",
-            "time": "2014-11-12 17:01:45"
+            "time": "2014-11-19 09:52:33"
         },
         {
             "name": "symfony/console",

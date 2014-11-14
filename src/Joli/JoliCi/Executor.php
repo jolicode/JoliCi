@@ -12,6 +12,7 @@ namespace Joli\JoliCi;
 
 use Docker\Docker;
 use Docker\Context\Context;
+use Docker\Exception\ImageNotFoundException;
 use Docker\Image;
 use Docker\Container as DockerContainer;
 use Monolog\Logger;
@@ -28,7 +29,7 @@ class Executor
     /**
      * Logger to log message when building
      *
-     * @var Logger
+     * @var LoggerCallback
      */
     protected $logger;
 
@@ -47,100 +48,96 @@ class Executor
      */
     private $timeout = 600;
 
-    public function __construct(Logger $logger, Docker $docker, $usecache = true, $quietBuild = true, $timeout = 600)
+    /**
+     * @var string Base directory where builds are located
+     */
+    private $buildPath;
+
+    public function __construct(LoggerCallback $logger, Docker $docker, $buildPath, $usecache = true, $quietBuild = true, $timeout = 600)
     {
-        $this->logger = $logger;
-        $this->docker = $docker;
-        $this->usecache = $usecache;
+        $this->logger     = $logger;
+        $this->docker     = $docker;
+        $this->usecache   = $usecache;
         $this->quietBuild = $quietBuild;
-        $this->timeout = $timeout;
+        $this->timeout    = $timeout;
+        $this->buildPath  = $buildPath;
     }
 
     /**
-     * Run build command
+     * Test a build
      *
-     * @param string $directory  Directory where the project to build is
-     * @param string $dockername Name of the docker image to create
+     * @param Build $build
+     * @param array|string $command
      *
-     * @return boolean Return true on build success, false otherwise
+     * @return integer
      */
-    public function runBuild($directory, $dockername)
+    public function test(Build $build, $command = null)
     {
-        $logger = $this->logger;
+        $exitCode = 1;
 
-        // Run build
-        $context  = new Context($directory);
-        $error    = false;
-
-        $this->docker->build($context, $dockername, function ($output) use ($logger, &$error, $dockername) {
-            $output    = json_decode($output, true);
-            $message   = "";
-
-            if (isset($output['error'])) {
-                $logger->addError(sprintf("Error when building image %s : %s", $dockername, $output['error']), array('static' => false, 'static-id' => null));
-                $error = true;
-
-                return;
-            }
-
-            if (isset($output['stream'])) {
-                $message = $output['stream'];
-            }
-
-            if (isset($output['status'])) {
-                $message = $output['status'];
-
-                if (isset($output['progress'])) {
-                    $message .= " ".$output['progress'];
-                }
-            }
-
-            $logger->addDebug($message, array(
-                'static'    => isset($output['id']),
-                'static-id' => isset($output['id']) ? $output['id'] : null,
-            ));
-        }, $this->quietBuild, $this->usecache, true);
-
-        $logger->addDebug("", array('clear-static' => true));
-
-        return !$error;
-    }
-
-    /**
-     * Run default command for DockerContainer
-     *
-     * @param string       $dockername  Name of docker image
-     * @param string|array $cmdOverride Override default command with this one
-     *
-     * @return DockerContainer return the container executed
-     */
-    public function runTest($dockername, $cmdOverride = array())
-    {
-        $logger           = $this->logger;
-        list($repo, $tag) = explode(':', $dockername);
-
-        // Execute test
-        $config = array();
-
-        if (is_string($cmdOverride)) {
-            $cmdOverride = array('/bin/bash', '-c', $cmdOverride);
+        // 2 Create image for build
+        if (false !== $this->create($build)) {
+            // 3 Run test if build has created an image
+            $exitCode = $this->run($build, $command);
         }
 
-        if (!empty($cmdOverride)) {
-            $config['Cmd'] = $cmdOverride;
+        return $exitCode;
+    }
+
+    /**
+     * Create a build
+     *
+     * @param Build $build Build used to create image
+     *
+     * @return Image|boolean Return the image created if sucessful or false otherwise
+     */
+    public function create(Build $build)
+    {
+        $context  = new Context($this->buildPath . DIRECTORY_SEPARATOR . $build->getDirectory());
+        $this->docker->build($context, $build->getName(), $this->logger->getBuildCallback(), $this->quietBuild, $this->usecache, true);
+        $this->logger->clearStatic();
+
+        try {
+            return $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
+        } catch (ImageNotFoundException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Run a build (it's suppose the image exist in docker
+     *
+     * @param Build $build Build to run
+     * @param string|array $command Command to use when run the build (null, by default, will use the command registered to the image)
+     *
+     * @return integer The exit code of the command run inside (0 = success, otherwise it has failed)
+     */
+    public function run(Build $build, $command = null)
+    {
+        $image     = $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
+        $config    = array('HostConfig' => array( 'Links' => array()));
+
+        foreach ($build->getServices() as $service) {
+            if ($service->getContainer()) {
+                $config['HostConfig']['Links'][] = sprintf('%s:%s', $service->getContainer()->getRuntimeInformations()['Name'], $service->getName());
+            }
         }
 
         $container = new DockerContainer($config);
-        $container->setImage(new Image($repo, $tag));
 
-        $this->docker->getContainerManager()->run($container, function ($content, $type) use ($logger) {
-            if ($type === 2) {
-                $logger->addError($content);
-            } else {
-                $logger->addInfo($content);
-            }
-        }, array(), false, $this->timeout);
+        if (is_string($command)) {
+            $command = array('/bin/bash', '-c', $command);
+        }
 
-        return $container;
+        if (is_array($command)) {
+            $container->setCmd($command);
+        }
+
+
+        $container->setImage($image);
+
+        $this->docker->getContainerManager()->run($container, $this->logger->getRunCallback(), array(), false, $this->timeout);
+
+        return $container->getExitCode();
     }
 }

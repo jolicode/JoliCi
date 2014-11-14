@@ -97,7 +97,7 @@ class Vacuum
         }
 
         foreach ($this->docker->getContainerManager()->findAll(array('all' => 1)) as $container) {
-            $id = $container->getImage()->getId();
+            $id = $container->getConfig()['Image'];
 
             foreach ($images as $image) {
                 if ($image->__toString() == $id) {
