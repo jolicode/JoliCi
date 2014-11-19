@@ -51,14 +51,20 @@ class Build
     protected $created;
 
     /**
+     * @var Service[] Services linked to this build
+     */
+    private $services = array();
+
+    /**
      * @param string    $project     Project of the build
      * @param string    $strategy    Strategy of the build
      * @param string    $uniq        A uniq identifier for this kind of build
      * @param array     $parameters  Parameters of the build (mainly depend on the strategy)
      * @param string    $description Description of this build (generally a nice name for end user)
      * @param \DateTime $created     Date of creation of the build
+     * @param array $services Services linked to the build
      */
-    public function __construct($project, $strategy, $uniq, $parameters = array(), $description = "", $created = null)
+    public function __construct($project, $strategy, $uniq, $parameters = array(), $description = "", $created = null, $services = array())
     {
         $this->project     = $project;
         $this->description = $description;
@@ -71,6 +77,7 @@ class Build
         }
 
         $this->created = $created;
+        $this->services = $services;
     }
 
     /**
@@ -101,6 +108,26 @@ class Build
     public function getTag()
     {
         return sprintf('%s-%s', $this->uniq, $this->created->format('U'));
+    }
+
+    /**
+     * Add a service to the build
+     *
+     * @param Service $service
+     */
+    public function addService(Service $service)
+    {
+        $this->services[] = $service;
+    }
+
+    /**
+     * Return all services linked to this build
+     *
+     * @return Service[]
+     */
+    public function getServices()
+    {
+        return $this->services;
     }
 
     /**

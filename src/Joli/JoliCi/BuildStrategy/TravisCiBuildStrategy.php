@@ -15,6 +15,7 @@ use Joli\JoliCi\Builder\DockerfileBuilder;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Matrix;
 use Joli\JoliCi\Naming;
+use Joli\JoliCi\Service;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -51,6 +52,65 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'before_script'  => array(),
             'script'         => array('npm test'),
             'env'            => array(),
+        ),
+    );
+
+    private $servicesMapping = array(
+        'mongodb' => array(
+            'repository' => 'mongo',
+            'tag' => '2.6',
+            'config' => array()
+        ),
+        'mysql'   => array(
+            'repository' => 'mysql',
+            'tag' => '5.5',
+            'config' => array(
+                'Env' => array(
+                    'MYSQL_ROOT_PASSWORD=""',
+                    'MYSQL_USER=travis',
+                    'MYSQL_PASSWORD=""'
+                )
+            )
+        ),
+        'postgresql' => array(
+            'repository' => 'postgres',
+            'tag'        => '9.1',
+            'config'     => array()
+        ),
+        'couchdb' => array(
+            'repository' => 'fedora/couchdb',
+            'tag' => 'latest',
+            'config' => array()
+        ),
+        'rabbitmq' => array(
+            'repository' => 'dockerfile/rabbitmq',
+            'tag' => 'latest',
+            'config' => array()
+        ),
+        'memcached' => array(
+            'repository' => 'sylvainlasnier/memcached',
+            'tag' => 'latest',
+            'config' => array()
+        ),
+        'redis-server' => array(
+            'repository' => 'redis',
+            'tag' => '2.8',
+            'config' => array()
+        ),
+        'cassandra' => array(
+            'repository' => 'spotify/cassandra',
+            'tag' => 'latest',
+            'config' => array()
+        ),
+        'neo4j' => array(
+            'repository' => 'tpires/neo4j',
+            'tag' => 'latest',
+            'config' => array()
+        ),
+        'elasticsearch' => array(
+            'repository' => 'dockerfile/elasticsearch',
+            'tag' => 'latest',
+            'config' => array()
         ),
     );
 
@@ -96,6 +156,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $builds     = array();
         $config     = Yaml::parse(file_get_contents($directory.DIRECTORY_SEPARATOR.".travis.yml"));
         $matrix     = $this->createMatrix($config);
+        $services   = $this->getServices($config);
         $timezone   = ini_get('date.timezone');
 
         foreach ($matrix->compute() as $possibility) {
@@ -121,7 +182,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                 'env'            => $possibility['environment'],
                 'timezone'       => $timezone,
                 'origin'         => realpath($directory),
-            ), $description);
+            ), $description, null, $services);
         }
 
         return $builds;
@@ -220,6 +281,25 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $matrix->setDimension('script', array($this->getConfigValue($config, $language, 'script')));
 
         return $matrix;
+    }
+
+    protected function getServices($config)
+    {
+        $services       = array();
+        $travisServices = isset($config['services']) ? $config['services'] : array();
+
+        foreach ($travisServices as $service) {
+            if (isset($this->servicesMapping[$service])) {
+                $services[] = new Service(
+                    $service,
+                    $this->servicesMapping[$service]['repository'],
+                    $this->servicesMapping[$service]['tag'],
+                    $this->servicesMapping[$service]['config']
+                );
+            }
+        }
+
+        return $services;
     }
 
     /**

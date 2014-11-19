@@ -114,10 +114,12 @@ class Container
 
     public function getExecutor($cache = true, $verbose = false, $timeout = 600)
     {
-        //Set timeout in ini (not superb but only way with current docker php library)
-        ini_set('default_socket_timeout', $timeout);
+        return new Executor($this->getLoggerCallback($verbose), $this->getDocker(), $this->getBuildPath(), $cache, false, $timeout);
+    }
 
-        return new Executor($this->getConsoleLogger($verbose), $this->getDocker(), $cache, false);
+    public function getServiceManager($verbose = false)
+    {
+        return new ServiceManager($this->getDocker(), $this->getLoggerCallback($verbose));
     }
 
     public function getBuildPath()
@@ -128,5 +130,10 @@ class Container
     public function getNaming()
     {
         return new Naming();
+    }
+
+    public function getLoggerCallback($verbose)
+    {
+        return new LoggerCallback($this->getConsoleLogger($verbose));
     }
 }

@@ -42,6 +42,7 @@ class RunCommand extends Command
         $verbose    = (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity());
         $strategy   = $container->getChainStrategy();
         $executor   = $container->getExecutor(!$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
+        $serviceManager = $container->getServiceManager($verbose);
 
         $output->writeln("<info>Creating builds...</info>");
 
@@ -55,13 +56,18 @@ class RunCommand extends Command
             foreach ($builds as $build) {
                 $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getDescription()));
 
-                $strategy->prepareBuild($build);
+                $serviceManager->start($build);
 
-                if ($executor->runBuild($container->getBuildPath().DIRECTORY_SEPARATOR.$build->getDirectory(), $build->getName())) {
-                    $exitCode += $executor->runTest($build->getName(), $input->getArgument('cmd'))->getExitCode();
-                }
+                $strategy->prepareBuild($build);
+                $exitCode += $executor->test($build, $input->getArgument('cmd'));
+
+                $serviceManager->stop($build);
             }
         } catch (\Exception $e) {
+            // Try stop last builds
+            if (isset($build)) {
+                $serviceManager->stop($build);
+            }
             // We do not deal with exception (Console Component do it well), we just catch it to allow cleaner to be runned even if one of the build failed hard
         }
 

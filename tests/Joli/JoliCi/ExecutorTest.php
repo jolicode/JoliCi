@@ -2,52 +2,95 @@
 
 namespace Joli\JoliCi;
 
+use Docker\Container;
+
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->logger  = $this->getMockBuilder('\Monolog\Logger')->disableOriginalConstructor()->getMock();
+        $this->logger  = $this->getMockBuilder('\Joli\JoliCi\LoggerCallback')->disableOriginalConstructor()->getMock();
         $this->docker  = $this->getMockBuilder('\Docker\Docker')->disableOriginalConstructor()->getMock();
-
-        $this->executor = new Executor($this->logger, $this->docker);
+        $this->imageManager = $this->getMockBuilder('\Docker\Manager\ImageManager')->disableOriginalConstructor()->getMock();
+        $this->executor = new Executor($this->logger, $this->docker, "");
     }
 
     public function testBuild()
     {
         $executor = new Executor($this->logger, $this->docker, true, true);
 
+        $this->logger->expects($this->once())
+            ->method('getBuildCallback')
+            ->will($this->returnValue(function () {}));
+
         $this->docker->expects($this->once())
             ->method('build')
             ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isTrue(), $this->isTrue());
 
-        $executor->runBuild("/test", "test");
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
+
+        $executor->create(new Build("/test", "test", "", ""));
     }
 
     public function testBuildWithoutCache()
     {
-        $executor = new Executor($this->logger, $this->docker, false, true);
+        $executor = new Executor($this->logger, $this->docker, "", false, true);
+
+        $this->logger->expects($this->once())
+            ->method('getBuildCallback')
+            ->will($this->returnValue(function () {}));
 
         $this->docker->expects($this->once())
             ->method('build')
             ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isTrue(), $this->isFalse());
 
-        $executor->runBuild("/test", "test");
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
+
+        $executor->create(new Build("/test", "test", "", ""));
     }
 
     public function testBuildNoQuiet()
     {
-        $executor = new Executor($this->logger, $this->docker, false, false);
+        $executor = new Executor($this->logger, $this->docker, "", false, false);
+
+        $this->logger->expects($this->once())
+            ->method('getBuildCallback')
+            ->will($this->returnValue(function () {}));
 
         $this->docker->expects($this->once())
             ->method('build')
             ->with($this->isInstanceOf('\Docker\Context\Context'), $this->stringContains('test'), $this->isType('callable'), $this->isFalse(), $this->isFalse());
 
-        $executor->runBuild("/test", "test");
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
+
+        $executor->create(new Build("/test", "test", "", ""));
     }
 
     public function testRunTest()
     {
         $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
+        $container = null;
+
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
 
         $this->docker->expects($this->once())
             ->method('getContainerManager')
@@ -55,67 +98,76 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $containerManager->expects($this->once())
             ->method('run')
-            ->will($this->returnSelf());
+            ->will($this->returnCallback(function (Container $c) use (&$container) {
+                $c->setExitCode(10);
+                $container = $c;
+            }));
 
-        $container = $this->executor->runTest("test:latest");
+        $exitCode = $this->executor->run(new Build("/test", "test", "", ""));
 
+        $this->assertEquals(10, $exitCode);
         $this->assertInstanceOf('\Docker\Container', $container);
-
-        $config = $container->getConfig();
-
-        $this->assertArrayHasKey("Image", $config);
-        $this->assertEquals("test:latest", $config["Image"]);
     }
 
     public function testRunTestWithCmdOverride()
     {
         $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
+        $container = null;
+
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
 
         $this->docker->expects($this->once())
             ->method('getContainerManager')
             ->will($this->returnValue($containerManager));
 
-        $containerManager->expects($this->any())
+        $containerManager->expects($this->once())
             ->method('run')
-            ->will($this->returnSelf());
-        $containerManager->expects($this->any())
-            ->method('attach')
-            ->will($this->returnSelf());
-        $containerManager->expects($this->any())
-            ->method('wait')
-            ->will($this->returnSelf());
+            ->will($this->returnCallback(function (Container $c) use(&$container) {
+                $c->setExitCode(0);
+                $container = $c;
+            }));
 
-        $container = $this->executor->runTest("test:latest", array("phpunit"));
+        $exitCode = $this->executor->run(new Build("/test", "test", "", ""), array("phpunit"));
 
-        $config = $container->getConfig();
-
-        $this->assertArrayHasKey("Cmd", $config);
-        $this->assertEquals(array("phpunit"), $config["Cmd"]);
+        $this->assertEquals(0, $exitCode);
+        $this->assertInstanceOf('\Docker\Container', $container);
+        $this->assertArrayHasKey("Cmd", $container->getConfig());
+        $this->assertEquals(array("phpunit"), $container->getConfig()["Cmd"]);
     }
 
     public function testRunTestWithCmdOverrideAsString()
     {
         $containerManager = $this->getMock('\Docker\Container\ContainerManager', array('run', 'attach', 'wait'));
+        $container = null;
+
+        $this->docker->expects($this->once())
+            ->method('getImageManager')
+            ->will($this->returnValue($this->imageManager));
+
+        $this->imageManager->expects($this->once())
+            ->method('find');
 
         $this->docker->expects($this->once())
             ->method('getContainerManager')
             ->will($this->returnValue($containerManager));
 
-        $containerManager->expects($this->any())
+        $containerManager->expects($this->once())
             ->method('run')
-            ->will($this->returnSelf());
-        $containerManager->expects($this->any())
-            ->method('attach')
-            ->will($this->returnSelf());
-        $containerManager->expects($this->any())
-            ->method('wait')
-            ->will($this->returnSelf());
+            ->will($this->returnCallback(function (Container $c) use (&$container) {
+                $c->setExitCode(0);
+                $container = $c;
+            }));
 
-        $container = $this->executor->runTest("test:latest", "phpunit");
+        $exitCode = $this->executor->run(new Build("/test", "test", "", ""), "phpunit");
 
-        $config = $container->getConfig();
-
-        $this->assertArrayHasKey("Cmd", $config);
-        $this->assertEquals(array("/bin/bash", "-c", "phpunit"), $config["Cmd"]);
+        $this->assertEquals(0, $exitCode);
+        $this->assertInstanceOf('\Docker\Container', $container);
+        $this->assertArrayHasKey("Cmd", $container->getConfig());
+        $this->assertEquals(array("/bin/bash", "-c", "phpunit"), $container->getConfig()["Cmd"]);
     }
 }
