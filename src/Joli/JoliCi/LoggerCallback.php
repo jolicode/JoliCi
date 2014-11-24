@@ -60,7 +60,7 @@ class LoggerCallback
         $message = "";
 
         if (isset($output['error'])) {
-            $this->logger->error(sprintf("Error when building image: %s", $output['error']), array('static' => false, 'static-id' => null));
+            $this->logger->error(sprintf("Error when creating job: %s", $output['error']), array('static' => false, 'static-id' => null));
             return;
         }
 

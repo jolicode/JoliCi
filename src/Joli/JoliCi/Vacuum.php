@@ -59,7 +59,7 @@ class Vacuum
      */
     public function clean($projectPath, $keep = 1, $force = false)
     {
-        $builds = $this->getBuildsToRemove($projectPath, $keep);
+        $builds = $this->getJobsToRemove($projectPath, $keep);
 
         $this->cleanDirectories($builds);
         $this->cleanContainers($builds);
@@ -69,30 +69,30 @@ class Vacuum
     /**
      * Clean directories for given builds
      *
-     * @param \Joli\JoliCi\Build[] $builds A list of buils to remove images from
+     * @param \Joli\JoliCi\Job[] $jobs A list of jobs to remove images from
      */
-    public function cleanDirectories($builds = array())
+    public function cleanDirectories($jobs = array())
     {
-        foreach ($builds as $build) {
-            $this->filesystem->remove($build->getDirectory());
+        foreach ($jobs as $job) {
+            $this->filesystem->remove($job->getDirectory());
         }
     }
 
     /**
      * Clean images for given builds
      *
-     * @param \Joli\JoliCi\Build[] $builds A list of buils to remove images from
+     * @param \Joli\JoliCi\Job[] $jobs A list of jobs to remove images from
      */
-    public function cleanContainers($builds = array())
+    public function cleanContainers($jobs = array())
     {
         $images     = array();
         $containers = array();
 
-        foreach ($builds as $build) {
-            if (isset($build->getParameters()['image'])) {
-                $images[] = $build->getParameters()['image'];
+        foreach ($jobs as $job) {
+            if (isset($job->getParameters()['image'])) {
+                $images[] = $job->getParameters()['image'];
             } else {
-                $images[] = $this->docker->getImageManager()->inspect(new Image($build->getRepository(), $build->getTag()));
+                $images[] = $this->docker->getImageManager()->inspect(new Image($job->getRepository(), $job->getTag()));
             }
         }
 
@@ -118,52 +118,52 @@ class Vacuum
     /**
      * Clean images for given builds
      *
-     * @param \Joli\JoliCi\Build[] $builds A list of buils to remove images from
-     * @param boolean              $force  Force removal for images
+     * @param \Joli\JoliCi\Job[] $jobs   A list of jobs to remove images from
+     * @param boolean            $force  Force removal for images
      */
-    public function cleanImages($builds = array(), $force = false)
+    public function cleanImages($jobs = array(), $force = false)
     {
-        foreach ($builds as $build) {
-            $this->docker->getImageManager()->delete(new Image($build->getRepository(), $build->getTag()), $force);
+        foreach ($jobs as $job) {
+            $this->docker->getImageManager()->delete(new Image($job->getRepository(), $job->getTag()), $force);
         }
     }
 
     /**
-     * Get all builds to remove given a project and how many versions to keep
+     * Get all jobs to remove given a project and how many versions to keep
      *
      * @param string $projectPath The project path
      * @param int    $keep        Number of project to keep
      *
-     * @return \Joli\JoliCi\Build[] A list of images to remove
+     * @return \Joli\JoliCi\Job[] A list of jobs to remove
      */
-    public function getBuildsToRemove($projectPath, $keep = 1)
+    public function getJobsToRemove($projectPath, $keep = 1)
     {
-        $currentBuilds  = $this->strategy->getBuilds($projectPath);
-        $existingBuilds = $this->getBuilds($projectPath);
+        $currentJobs  = $this->strategy->getJobs($projectPath);
+        $existingJobs = $this->getJobs($projectPath);
         $uniqList = array();
         $removes  = array();
         $ordered  = array();
 
-        foreach ($currentBuilds as $build) {
-            $uniqList[] = $build->getUniq();
+        foreach ($currentJobs as $job) {
+            $uniqList[] = $job->getUniq();
         }
 
         // Remove not existant image (old build configuration)
-        foreach ($existingBuilds as $build) {
-            if (!in_array($build->getUniq(), $uniqList)) {
-                $removes[] = $build;
+        foreach ($existingJobs as $job) {
+            if (!in_array($job->getUniq(), $uniqList)) {
+                $removes[] = $job;
             } else {
-                $ordered[$build->getUniq()][$build->getCreated()->format('U')] = $build;
+                $ordered[$job->getUniq()][$job->getCreated()->format('U')] = $job;
             }
         }
 
         // Remove old image
-        foreach ($ordered as $builds) {
-            ksort($builds);
-            $keeped = count($builds);
+        foreach ($ordered as $jobs) {
+            ksort($jobs);
+            $keeped = count($jobs);
 
             while ($keeped > $keep) {
-                $removes[] = array_shift($builds);
+                $removes[] = array_shift($jobs);
                 $keeped--;
             }
         }
@@ -172,40 +172,40 @@ class Vacuum
     }
 
     /**
-     * Get all builds related to a project
+     * Get all jobs related to a project
      *
      * @param string $projectPath Directory where the project is
      *
-     * @return \Joli\JoliCi\Build[]
+     * @return \Joli\JoliCi\Job[]
      */
-    protected function getBuilds($projectPath)
+    protected function getJobs($projectPath)
     {
-        $builds          = array();
+        $jobs            = array();
         $project         = $this->naming->getProjectName($projectPath);
-        $repositoryRegex = sprintf('#^%s_([a-z]+?)/%s$#', Build::BASE_NAME, $project);
+        $repositoryRegex = sprintf('#^%s_([a-z]+?)/%s$#', Job::BASE_NAME, $project);
 
         foreach ($this->docker->getImageManager()->findAll() as $image) {
             if (preg_match($repositoryRegex, $image->getRepository(), $matches)) {
-                $builds[] = $this->getBuildFromImage($image, $matches[1], $project);
+                $jobs[] = $this->getJobFromImage($image, $matches[1], $project);
             }
         }
 
-        return $builds;
+        return $jobs;
     }
 
     /**
-     * Create a build from a docker image
+     * Create a job from a docker image
      *
      * @param Image  $image
      * @param string $strategy
      * @param string $project
      *
-     * @return \Joli\JoliCi\Build
+     * @return \Joli\JoliCi\Job
      */
-    protected function getBuildFromImage(Image $image, $strategy, $project)
+    protected function getJobFromImage(Image $image, $strategy, $project)
     {
         list($uniq, $timestamp)     = explode('-', $image->getTag());
 
-        return new Build($project, $strategy, $uniq, array('image' => $image), "", \DateTime::createFromFormat('U', $timestamp));
+        return new Job($project, $strategy, $uniq, array('image' => $image), "", \DateTime::createFromFormat('U', $timestamp));
     }
 }

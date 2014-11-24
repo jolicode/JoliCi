@@ -33,7 +33,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->imageManager->expects($this->once())
             ->method('find');
 
-        $executor->create(new Build("/test", "test", "", ""));
+        $executor->create(new Job("/test", "test", "", ""));
     }
 
     public function testBuildWithoutCache()
@@ -55,7 +55,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->imageManager->expects($this->once())
             ->method('find');
 
-        $executor->create(new Build("/test", "test", "", ""));
+        $executor->create(new Job("/test", "test", "", ""));
     }
 
     public function testBuildNoQuiet()
@@ -77,7 +77,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->imageManager->expects($this->once())
             ->method('find');
 
-        $executor->create(new Build("/test", "test", "", ""));
+        $executor->create(new Job("/test", "test", "", ""));
     }
 
     public function testRunTest()
@@ -103,7 +103,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 $container = $c;
             }));
 
-        $exitCode = $this->executor->run(new Build("/test", "test", "", ""));
+        $exitCode = $this->executor->run(new Job("/test", "test", "", ""));
 
         $this->assertEquals(10, $exitCode);
         $this->assertInstanceOf('\Docker\Container', $container);
@@ -132,7 +132,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 $container = $c;
             }));
 
-        $exitCode = $this->executor->run(new Build("/test", "test", "", ""), array("phpunit"));
+        $exitCode = $this->executor->run(new Job("/test", "test", "", ""), array("phpunit"));
 
         $this->assertEquals(0, $exitCode);
         $this->assertInstanceOf('\Docker\Container', $container);
@@ -163,7 +163,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 $container = $c;
             }));
 
-        $exitCode = $this->executor->run(new Build("/test", "test", "", ""), "phpunit");
+        $exitCode = $this->executor->run(new Job("/test", "test", "", ""), "phpunit");
 
         $this->assertEquals(0, $exitCode);
         $this->assertInstanceOf('\Docker\Container', $container);

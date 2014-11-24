@@ -10,8 +10,8 @@ use Docker\Container as DockerContainer;
  * It can be for example a MySQL database which contains the needed fixtures in order
  * to make functional tests
  *
- * Multiple services can be link to a build and they are started before creation of the build.
- * Once the build is finished, all services linkes are shutdown and reset to initial state for subsequent build
+ * Multiple services can be link to a Job and they are started before creation of the Job.
+ * Once the Job is finished, all services linkes are shutdown and reset to initial state for subsequent Job
  */
 class Service
 {

@@ -34,19 +34,19 @@ class CleanCommand extends Command
         $vacuum = $container->getVacuum();
 
         if ($input->getOption('only-containers')) {
-            $vacuum->cleanContainers($vacuum->getBuildsToRemove($input->getOption('project-path'), $input->getOption('keep')));
+            $vacuum->cleanContainers($vacuum->getJobsToRemove($input->getOption('project-path'), $input->getOption('keep')));
 
             return 0;
         }
 
         if ($input->getOption('only-directories')) {
-            $vacuum->cleanDirectories($vacuum->getBuildsToRemove($input->getOption('project-path'), $input->getOption('keep')));
+            $vacuum->cleanDirectories($vacuum->getJobsToRemove($input->getOption('project-path'), $input->getOption('keep')));
 
             return 0;
         }
 
         if ($input->getOption('only-images')) {
-            $vacuum->cleanImages($vacuum->getBuildsToRemove($input->getOption('project-path'), $input->getOption('keep')), $input->getOption('force'));
+            $vacuum->cleanImages($vacuum->getJobsToRemove($input->getOption('project-path'), $input->getOption('keep')), $input->getOption('force'));
 
             return 0;
         }

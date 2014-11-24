@@ -10,7 +10,7 @@
 
 namespace Joli\JoliCi\BuildStrategy;
 
-use Joli\JoliCi\Build;
+use Joli\JoliCi\Job;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Naming;
 use Symfony\Component\Finder\Finder;
@@ -54,14 +54,14 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function getBuilds($directory)
+    public function getJobs($directory)
     {
         $builds = array();
         $finder = new Finder();
         $finder->directories();
 
         foreach ($finder->in($this->getJoliCiStrategyDirectory($directory)) as $dir) {
-            $builds[] = new Build(
+            $builds[] = new Job(
                 $this->naming->getProjectName($directory),
                 $this->getName(),
                 $this->naming->getUniqueKey(array('build' => $dir->getFilename())),
@@ -79,11 +79,11 @@ class JoliCiBuildStrategy implements BuildStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function prepareBuild(Build $build)
+    public function prepareJob(Job $job)
     {
-        $origin = $build->getParameters()['origin'];
-        $target = $this->buildPath.DIRECTORY_SEPARATOR.$build->getDirectory();
-        $build  = $build->getParameters()['build'];
+        $origin = $job->getParameters()['origin'];
+        $target = $this->buildPath.DIRECTORY_SEPARATOR. $job->getDirectory();
+        $build  = $job->getParameters()['build'];
 
         // First mirroring target
         $this->filesystem->mirror($origin, $target, null, array(

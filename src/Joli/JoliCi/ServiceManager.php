@@ -21,11 +21,11 @@ class ServiceManager
     }
 
     /**
-     * Start services for a build
+     * Start services for a Job
      *
-     * @param Build $build
+     * @param Job $build
      */
-    public function start(Build $build)
+    public function start(Job $build)
     {
         foreach ($build->getServices() as $service) {
             try {
@@ -43,14 +43,14 @@ class ServiceManager
     }
 
     /**
-     * Stop services for a build and reinit volumes
+     * Stop services for a Job and reinit volumes
      *
-     * @param Build $build
+     * @param Job $build
      * @param int $timeout
      *
      * @throws \Docker\Exception\UnexpectedStatusCodeException
      */
-    public function stop(Build $build, $timeout = 10)
+    public function stop(Job $build, $timeout = 10)
     {
         foreach ($build->getServices() as $service) {
             if ($service->getContainer()) {

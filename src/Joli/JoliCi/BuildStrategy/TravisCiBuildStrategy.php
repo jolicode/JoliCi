@@ -10,7 +10,7 @@
 
 namespace Joli\JoliCi\BuildStrategy;
 
-use Joli\JoliCi\Build;
+use Joli\JoliCi\Job;
 use Joli\JoliCi\Builder\DockerfileBuilder;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Matrix;
@@ -19,7 +19,7 @@ use Joli\JoliCi\Service;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * TravisCi implementation for build
+ * TravisCi implementation for build strategy
  *
  * A project must have a .travis.yml file
  *
@@ -151,9 +151,9 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function getBuilds($directory)
+    public function getJobs($directory)
     {
-        $builds     = array();
+        $jobs       = array();
         $config     = Yaml::parse(file_get_contents($directory.DIRECTORY_SEPARATOR.".travis.yml"));
         $matrix     = $this->createMatrix($config);
         $services   = $this->getServices($config);
@@ -172,7 +172,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                 $description .= sprintf(', Environment: %s', json_encode($possibility['environment']));
             }
 
-            $builds[] = new Build($this->naming->getProjectName($directory), $this->getName(), $this->naming->getUniqueKey($parmeters), array(
+            $jobs[] = new Job($this->naming->getProjectName($directory), $this->getName(), $this->naming->getUniqueKey($parmeters), array(
                 'language'       => $possibility['language'],
                 'version'        => $possibility['version'],
                 'before_install' => $possibility['before_install'],
@@ -185,17 +185,17 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             ), $description, null, $services);
         }
 
-        return $builds;
+        return $jobs;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prepareBuild(Build $build)
+    public function prepareJob(Job $job)
     {
-        $parameters = $build->getParameters();
+        $parameters = $job->getParameters();
         $origin     = $parameters['origin'];
-        $target     = $this->buildPath.DIRECTORY_SEPARATOR.$build->getDirectory();
+        $target     = $this->buildPath.DIRECTORY_SEPARATOR. $job->getDirectory();
 
         // First mirroring target
         $this->filesystem->mirror($origin, $target, null, array(
@@ -283,6 +283,13 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         return $matrix;
     }
 
+    /**
+     * Get services list from travis ci configuration file
+     *
+     * @param $config
+     *
+     * @return Service[]
+     */
     protected function getServices($config)
     {
         $services       = array();

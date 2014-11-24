@@ -10,59 +10,59 @@
 
 namespace Joli\JoliCi;
 
-class Build
+class Job
 {
     const BASE_NAME = 'jolici';
 
     /**
-     * @var string Name of build
+     * @var string Name of job
      */
     protected $project;
 
     /**
-     * @var string Strategy associated with this build
+     * @var string Strategy associated with this job
      */
     protected $strategy;
 
     /**
-     * @var string Uniq key for this "kind" of build
+     * @var string Uniq key for this "kind" of job
      *
-     * This key is not a identifier (the name is the identifier in a build), it's more like a category,
-     * build with same parameters MUST have the same uniq key, this key is use to track the history
-     * of a build over time (for cleaning, reports, etc ....)
+     * This key is not a identifier (the name is the identifier in a job), it's more like a category,
+     * job with same parameters MUST have the same uniq key, this key is use to track the history
+     * of a job over time (for cleaning, reports, etc ....)
      */
     protected $uniq;
 
     /**
-     * @var array Parameters of this build
+     * @var array Parameters of this job
      *
      * It mainly depend on the strategy, ie for TravisCi strategy this will include the language used, version used, etc ...
      */
     protected $parameters;
 
     /**
-     * @var string Description of this build (generally a nice name for end user)
+     * @var string Description of this job (generally a nice name for end user)
      */
     protected $description;
 
     /**
-     * @var \DateTime Date of creation of the build
+     * @var \DateTime Date of creation of the job
      */
     protected $created;
 
     /**
-     * @var Service[] Services linked to this build
+     * @var Service[] Services linked to this job
      */
     private $services = array();
 
     /**
-     * @param string    $project     Project of the build
-     * @param string    $strategy    Strategy of the build
-     * @param string    $uniq        A uniq identifier for this kind of build
-     * @param array     $parameters  Parameters of the build (mainly depend on the strategy)
-     * @param string    $description Description of this build (generally a nice name for end user)
-     * @param \DateTime $created     Date of creation of the build
-     * @param array $services Services linked to the build
+     * @param string    $project     Project of the job
+     * @param string    $strategy    Strategy of the job
+     * @param string    $uniq        A uniq identifier for this kind of job
+     * @param array     $parameters  Parameters of the job (mainly depend on the strategy)
+     * @param string    $description Description of this job (generally a nice name for end user)
+     * @param \DateTime $created     Date of creation of the job
+     * @param array $services Services linked to the job
      */
     public function __construct($project, $strategy, $uniq, $parameters = array(), $description = "", $created = null, $services = array())
     {
@@ -81,7 +81,7 @@ class Build
     }
 
     /**
-     * Get name of this build
+     * Get name of this job
      *
      * @return string
      */
@@ -91,7 +91,7 @@ class Build
     }
 
     /**
-     * Get repository name for docker images build with this strategy
+     * Get repository name for docker images job with this strategy
      *
      * @return string
      */
@@ -111,7 +111,7 @@ class Build
     }
 
     /**
-     * Add a service to the build
+     * Add a service to the job
      *
      * @param Service $service
      */
@@ -121,7 +121,7 @@ class Build
     }
 
     /**
-     * Return all services linked to this build
+     * Return all services linked to this job
      *
      * @return Service[]
      */
@@ -131,7 +131,7 @@ class Build
     }
 
     /**
-     * Return directory of build
+     * Return directory of job
      *
      * @return string
      */

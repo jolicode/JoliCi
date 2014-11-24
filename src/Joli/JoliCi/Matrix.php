@@ -11,7 +11,7 @@
 namespace Joli\JoliCi;
 
 /**
- * Create the build list by computing all available possibility through dimensions
+ * Create the Job list by computing all available possibility through dimensions
  */
 class Matrix
 {

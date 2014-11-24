@@ -2,7 +2,7 @@
 
 namespace Joli\JoliCi\BuildStrategy;
 
-use Joli\JoliCi\Build;
+use Joli\JoliCi\Job;
 
 class ChainBuildStrategy implements BuildStrategyInterface
 {
@@ -24,13 +24,13 @@ class ChainBuildStrategy implements BuildStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function getBuilds($directory)
+    public function getJobs($directory)
     {
         $builds = array();
 
         foreach ($this->strategies as $strategy) {
             if ($strategy->supportProject($directory)) {
-                $builds += $strategy->getBuilds($directory);
+                $builds += $strategy->getJobs($directory);
             }
         }
 
@@ -40,9 +40,9 @@ class ChainBuildStrategy implements BuildStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function prepareBuild(Build $build)
+    public function prepareJob(Job $job)
     {
-        $this->strategies[$build->getStrategy()]->prepareBuild($build);
+        $this->strategies[$job->getStrategy()]->prepareJob($job);
     }
 
     /**

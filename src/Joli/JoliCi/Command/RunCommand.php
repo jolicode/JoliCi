@@ -46,27 +46,27 @@ class RunCommand extends Command
 
         $output->writeln("<info>Creating builds...</info>");
 
-        $builds = $strategy->getBuilds($input->getOption("project-path"));
+        $jobs = $strategy->getJobs($input->getOption("project-path"));
 
-        $output->writeln(sprintf("<info>%s builds created</info>", count($builds)));
+        $output->writeln(sprintf("<info>%s builds created</info>", count($jobs)));
 
         $exitCode = 0;
 
         try {
-            foreach ($builds as $build) {
-                $output->writeln(sprintf("\n<info>Running build %s</info>\n", $build->getDescription()));
+            foreach ($jobs as $job) {
+                $output->writeln(sprintf("\n<info>Running job %s</info>\n", $job->getDescription()));
 
-                $serviceManager->start($build);
+                $serviceManager->start($job);
 
-                $strategy->prepareBuild($build);
-                $exitCode += $executor->test($build, $input->getArgument('cmd'));
+                $strategy->prepareJob($job);
+                $exitCode += $executor->test($job, $input->getArgument('cmd'));
 
-                $serviceManager->stop($build);
+                $serviceManager->stop($job);
             }
         } catch (\Exception $e) {
             // Try stop last builds
-            if (isset($build)) {
-                $serviceManager->stop($build);
+            if (isset($job)) {
+                $serviceManager->stop($job);
             }
             // We do not deal with exception (Console Component do it well), we just catch it to allow cleaner to be runned even if one of the build failed hard
         }

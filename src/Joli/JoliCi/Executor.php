@@ -66,12 +66,12 @@ class Executor
     /**
      * Test a build
      *
-     * @param Build $build
+     * @param Job $build
      * @param array|string $command
      *
      * @return integer
      */
-    public function test(Build $build, $command = null)
+    public function test(Job $build, $command = null)
     {
         $exitCode = 1;
 
@@ -87,11 +87,11 @@ class Executor
     /**
      * Create a build
      *
-     * @param Build $build Build used to create image
+     * @param Job $build Build used to create image
      *
      * @return Image|boolean Return the image created if sucessful or false otherwise
      */
-    public function create(Build $build)
+    public function create(Job $build)
     {
         $context  = new Context($this->buildPath . DIRECTORY_SEPARATOR . $build->getDirectory());
         $this->docker->build($context, $build->getName(), $this->logger->getBuildCallback(), $this->quietBuild, $this->usecache, true);
@@ -107,12 +107,12 @@ class Executor
     /**
      * Run a build (it's suppose the image exist in docker
      *
-     * @param Build $build Build to run
+     * @param Job $build Build to run
      * @param string|array $command Command to use when run the build (null, by default, will use the command registered to the image)
      *
      * @return integer The exit code of the command run inside (0 = success, otherwise it has failed)
      */
-    public function run(Build $build, $command = null)
+    public function run(Job $build, $command = null)
     {
         $image     = $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
         $config    = array('HostConfig' => array( 'Links' => array()));

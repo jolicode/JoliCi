@@ -2,42 +2,42 @@
 
 namespace Joli\JoliCi\BuildStrategy;
 
-use Joli\JoliCi\Build;
+use Joli\JoliCi\Job;
 
 class ChainBuildStrategyTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetBuilds()
+    public function testGetJobs()
     {
         $builder = new ChainBuildStrategy();
         $builder->pushStrategy(new FooBuildStrategy());
 
-        $builds = $builder->getBuilds("test");
+        $jobs = $builder->getJobs("test");
 
-        $this->assertCount(1, $builds);
+        $this->assertCount(1, $jobs);
 
-        $build = $builds[0];
+        $job = $jobs[0];
 
-        $this->assertEquals("test", $build->getStrategy());
-        $this->assertContains("jolici_test/test:test-", $build->getName());
-        $this->assertContains("jolici_test/test:test-", $build->getDirectory());
+        $this->assertEquals("test", $job->getStrategy());
+        $this->assertContains("jolici_test/test:test-", $job->getName());
+        $this->assertContains("jolici_test/test:test-", $job->getDirectory());
     }
 
-    public function testNoBuildsEmpty()
+    public function testNoJobsEmpty()
     {
         $builder = new ChainBuildStrategy();
         $builder->pushStrategy(new NoBuildStrategy());
 
-        $builds = $builder->getBuilds("test");
+        $jobs = $builder->getJobs("test");
 
-        $this->assertCount(0, $builds);
+        $this->assertCount(0, $jobs);
     }
 }
 
 class FooBuildStrategy implements BuildStrategyInterface
 {
-    public function getBuilds($directory)
+    public function getJobs($directory)
     {
-        return array(new Build("test", "test", "test"));
+        return array(new Job("test", "test", "test"));
     }
 
     public function getName()
@@ -45,7 +45,7 @@ class FooBuildStrategy implements BuildStrategyInterface
         return "dummy";
     }
 
-    public function prepareBuild(Build $build)
+    public function prepareJob(Job $job)
     {
     }
 
