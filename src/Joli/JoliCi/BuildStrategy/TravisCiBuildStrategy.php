@@ -34,21 +34,21 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     private $defaults = array(
         'php' => array(
             'before_install' => array(),
-            'install'        => array('composer install'),
+            'install'        => array(),
             'before_script'  => array(),
             'script'         => array('phpunit'),
             'env'            => array(),
         ),
         'ruby' => array(
             'before_install' => array(),
-            'install'        => array('bundle install'),
+            'install'        => array(),
             'before_script'  => array(),
             'script'         => array('bundle exec rake'),
             'env'            => array(),
         ),
         'node_js' => array(
             'before_install' => array(),
-            'install'        => array('npm install'),
+            'install'        => array(),
             'before_script'  => array(),
             'script'         => array('npm test'),
             'env'            => array(),
