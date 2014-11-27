@@ -57,9 +57,8 @@ class RunCommand extends Command
                 $output->writeln(sprintf("\n<info>Running job %s</info>\n", $job->getDescription()));
 
                 $serviceManager->start($job);
-
                 $strategy->prepareJob($job);
-                $exitCode += $executor->test($job, $input->getArgument('cmd'));
+                $exitCode += $executor->test($job, $input->getArgument('cmd')) == 0 ? 0 : 1;
 
                 $serviceManager->stop($job);
             }
