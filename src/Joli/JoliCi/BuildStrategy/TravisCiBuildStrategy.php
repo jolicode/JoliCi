@@ -160,7 +160,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $timezone   = ini_get('date.timezone');
 
         foreach ($matrix->compute() as $possibility) {
-            $parmeters   = array(
+            $parameters   = array(
                 'language' => $possibility['language'],
                 'version' => $possibility['version'],
                 'environment' => $possibility['environment'],
@@ -172,7 +172,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                 $description .= sprintf(', Environment: %s', json_encode($possibility['environment']));
             }
 
-            $jobs[] = new Job($this->naming->getProjectName($directory), $this->getName(), $this->naming->getUniqueKey($parmeters), array(
+            $jobs[] = new Job($this->naming->getProjectName($directory), $this->getName(), $this->naming->getUniqueKey($parameters), array(
                 'language'       => $possibility['language'],
                 'version'        => $possibility['version'],
                 'before_install' => $possibility['before_install'],
@@ -180,6 +180,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                 'before_script'  => $possibility['before_script'],
                 'script'         => $possibility['script'],
                 'env'            => $possibility['environment'],
+                'global_env'     => $possibility['global_env'],
                 'timezone'       => $timezone,
                 'origin'         => realpath($directory),
             ), $description, null, $services);
@@ -265,20 +266,46 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $versionKey       = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
         $environmentLines = $this->getConfigValue($config, $language, "env");
         $environnements   = array();
+        $globalEnv        = array();
+        $matrixEnv        = $environmentLines;
+        $versions         = $config[$versionKey];
+
+        foreach ($versions as $key => $version) {
+            if (!$this->isLanguageVersionSupported($language, $version)) {
+                unset($versions[$key]);
+            }
+        }
+
+        if (isset($environmentLines['matrix'])) {
+            $matrixEnv = $environmentLines['matrix'];
+        }
+
+        if (isset($environmentLines['global'])) {
+            foreach ($environmentLines['global'] as $environementVariable) {
+                list ($key, $value) = $this->parseEnvironementVariable($environementVariable);
+                $globalEnv = array_merge($globalEnv, array($key => $value));
+            }
+
+            if (!isset($environmentLines['matrix'])) {
+                $matrixEnv = array();
+            }
+        }
 
         // Parsing environnements
-        foreach ($environmentLines as $environmentLine) {
-            $environnements[] = $this->parseEnvironmentVariables($environmentLine);
+        foreach ($matrixEnv as $environmentLine) {
+            $environnements[] = $this->parseEnvironmentLine($environmentLine);
         }
 
         $matrix = new Matrix();
         $matrix->setDimension('language', array($language));
         $matrix->setDimension('environment', $environnements);
-        $matrix->setDimension('version', $config[$versionKey]);
+        $matrix->setDimension('global_env', array($globalEnv));
+        $matrix->setDimension('version', $versions);
         $matrix->setDimension('before_install', array($this->getConfigValue($config, $language, 'before_install')));
         $matrix->setDimension('install', array($this->getConfigValue($config, $language, 'install')));
         $matrix->setDimension('before_script', array($this->getConfigValue($config, $language, 'before_script')));
         $matrix->setDimension('script', array($this->getConfigValue($config, $language, 'script')));
+
 
         return $matrix;
     }
@@ -293,7 +320,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
     protected function getServices($config)
     {
         $services       = array();
-        $travisServices = isset($config['services']) ? $config['services'] : array();
+        $travisServices = isset($config['services']) && is_array($config['services']) ? $config['services'] : array();
 
         foreach ($travisServices as $service) {
             if (isset($this->servicesMapping[$service])) {
@@ -320,19 +347,42 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
      * @param $environmentLine
      * @return array
      */
-    private function parseEnvironmentVariables($environmentLine)
+    private function parseEnvironmentLine($environmentLine)
     {
-        $variables     = array();
+        $variables     = array();@
         $variableLines = explode(' ', $environmentLine ?: '');
 
         foreach ($variableLines as $variableLine) {
             if (!empty($variableLine)) {
-                list($key, $value) = explode('=', $variableLine);
-
-                $variables[$key] = $value;
+                list($key, $value) = $this->parseEnvironementVariable($variableLine);
+                $variables[$key]   = $value;
             }
         }
 
         return $variables;
+    }
+
+    /**
+     * Parse an envar
+     *
+     * @param $envVar
+     * @return array<Key, Value>
+     */
+    private function parseEnvironementVariable($envVar)
+    {
+        return explode('=', $envVar);
+    }
+
+    private function isLanguageVersionSupported($language, $version)
+    {
+        return file_exists(__DIR__
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . 'resources'
+            . DIRECTORY_SEPARATOR . 'templates'
+            . DIRECTORY_SEPARATOR . $language
+            . DIRECTORY_SEPARATOR . 'Dockerfile-' . $version . '.twig');
     }
 }

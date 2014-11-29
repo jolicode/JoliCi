@@ -1,6 +1,10 @@
 {% extends "Dockerfile.twig" %}
 
 {% block env %}
+{% for key,value in global_env %}
+ENV {{ key }} {{ value }}
+{% endfor %}
+
 {% for key,value in env %}
 ENV {{ key }} {{ value }}
 {% endfor %}
