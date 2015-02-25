@@ -124,7 +124,7 @@ class Vacuum
     public function cleanImages($jobs = array(), $force = false)
     {
         foreach ($jobs as $job) {
-            $this->docker->getImageManager()->delete(new Image($job->getRepository(), $job->getTag()), $force);
+            $this->docker->getImageManager()->remove(new Image($job->getRepository(), $job->getTag()), $force);
         }
     }
 
