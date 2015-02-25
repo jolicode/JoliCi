@@ -29,5 +29,5 @@ RUN /bin/bash -c -l "cd $WORKDIR && {{ line|replace({"$": "\\\$", '"': '\\\"'}) 
 {% endblock %}
 
 {% block script %}
-CMD /bin/bash -c -l "cd $WORKDIR{% for line in script %} && {{ line|replace({"$": "\\\$", '"': '\\\"'}) }}{% endfor %}"
+CMD /bin/bash -c -l "sleep 120 && cd $WORKDIR{% for line in script %} && {{ line|replace({"$": "\\\$", '"': '\\\"'}) }}{% endfor %}"
 {% endblock %}

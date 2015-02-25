@@ -6,6 +6,9 @@ php:
     - 5.6
     - hhvm
 
+services:
+    - mysql
+
 matrix:
     allow_failures:
         - php: hhvm
@@ -13,4 +16,4 @@ matrix:
 before_script:
     - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source install
 
-script: phpunit
+script: echo "SHOW DATABASES;" | mysql -u travis -h 127.0.0.1

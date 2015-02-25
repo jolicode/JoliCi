@@ -15,6 +15,9 @@ use Docker\Container as DockerContainer;
  */
 class Service
 {
+    const PROTOCOL_TCP = 'tcp';
+    const PROTOCOL_UDP = 'udp';
+
     /**
      * @var string Service name (use in link to container)
      */
@@ -36,15 +39,32 @@ class Service
     private $config;
 
     /**
+     * @var string protocol of the service
+     */
+    private $protocol;
+
+    /**
+     * @var integer port number of the service
+     */
+    private $port;
+
+    /**
      * @var \Docker\Container Container used for this service
      */
     private $container;
 
-    public function __construct($name, $repository, $tag, $config = array())
+    /**
+     * @var Exec identifier for the socat proxy
+     */
+    private $execId;
+
+    public function __construct($name, $repository, $tag, $port, $protocol = Service::PROTOCOL_TCP, $config = array())
     {
         $this->name       = $name;
         $this->repository = $repository;
         $this->tag        = $tag;
+        $this->port       = $port;
+        $this->protocol   = $protocol;
         $this->config     = $config;
     }
 
@@ -94,5 +114,53 @@ class Service
     public function setContainer(DockerContainer $container)
     {
         $this->container = $container;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    /**
+     * @param int $port
+     */
+    public function setPort($port)
+    {
+        $this->port = $port;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->protocol;
+    }
+
+    /**
+     * @param string $protocol
+     */
+    public function setProtocol($protocol)
+    {
+        $this->protocol = $protocol;
+    }
+
+    /**
+     * @return Exec
+     */
+    public function getExecId()
+    {
+        return $this->execId;
+    }
+
+    /**
+     * @param Exec $execId
+     */
+    public function setExecId($execId)
+    {
+        $this->execId = $execId;
     }
 }

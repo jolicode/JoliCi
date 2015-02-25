@@ -59,11 +59,15 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         'mongodb' => array(
             'repository' => 'mongo',
             'tag' => '2.6',
+            'port' => 27017,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'mysql'   => array(
             'repository' => 'mysql',
             'tag' => '5.5',
+            'port' => 3306,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array(
                 'Env' => array(
                     'MYSQL_ROOT_PASSWORD=""',
@@ -74,42 +78,58 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         ),
         'postgresql' => array(
             'repository' => 'postgres',
-            'tag'        => '9.1',
-            'config'     => array()
+            'tag' => '9.1',
+            'port' => 5432,
+            'protocol' => Service::PROTOCOL_TCP,
+            'config' => array()
         ),
         'couchdb' => array(
             'repository' => 'fedora/couchdb',
             'tag' => 'latest',
+            'port' => 5984,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'rabbitmq' => array(
-            'repository' => 'dockerfile/rabbitmq',
+            'repository' => 'rabbitmq',
             'tag' => 'latest',
+            'port' => 5672,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'memcached' => array(
-            'repository' => 'sylvainlasnier/memcached',
+            'repository' => 'memcached',
             'tag' => 'latest',
+            'port' => 11211,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'redis-server' => array(
             'repository' => 'redis',
             'tag' => '2.8',
+            'port' => 6379,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'cassandra' => array(
             'repository' => 'spotify/cassandra',
             'tag' => 'latest',
+            'port' => 9042,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'neo4j' => array(
             'repository' => 'tpires/neo4j',
             'tag' => 'latest',
+            'port' => 7474,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
         'elasticsearch' => array(
             'repository' => 'dockerfile/elasticsearch',
             'tag' => 'latest',
+            'port' => 9200,
+            'protocol' => Service::PROTOCOL_TCP,
             'config' => array()
         ),
     );
@@ -328,6 +348,8 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
                     $service,
                     $this->servicesMapping[$service]['repository'],
                     $this->servicesMapping[$service]['tag'],
+                    $this->servicesMapping[$service]['port'],
+                    $this->servicesMapping[$service]['protocol'],
                     $this->servicesMapping[$service]['config']
                 );
             }

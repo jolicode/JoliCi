@@ -136,7 +136,28 @@ class Executor
 
         $container->setImage($image);
 
-        $this->docker->getContainerManager()->run($container, $this->logger->getRunCallback(), array(), false, $this->timeout);
+        $this->docker->getContainerManager()->create($container);
+        $attachResponse = $this->docker->getContainerManager()->attach($container, $this->logger->getRunCallback(), true, true, true, true, true, $this->timeout);
+
+        $this->docker->getContainerManager()->start($container);
+
+        // Start local socat to transfer stream to the correct service
+        foreach ($build->getServices() as $service) {
+            $socatCmd = [
+                'socat',
+                'TCP4-LISTEN:'. $service->getPort() .',fork,reuseaddr',
+                'TCP4:'.str_replace('/', '', $service->getContainer()->getName()).':'.$service->getPort()
+            ];
+
+            var_dump($socatCmd);
+
+            $execid = $this->docker->getContainerManager()->exec($container, $socatCmd);
+            $service->setExecId($execid);
+            $this->docker->getContainerManager()->execstart($execid, $this->logger->getRunCallback());
+        }
+
+        $attachResponse->getBody()->getContents();
+        $this->docker->getContainerManager()->wait($container, $this->timeout);
 
         return $container->getExitCode();
     }
