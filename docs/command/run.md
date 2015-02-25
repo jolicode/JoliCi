@@ -1,6 +1,6 @@
 # The run command
 
-The run command is the main command of JoliCi. It create and prepare the differents environments (jobs) and execute the command on each of it.
+The run command is the main command of JoliCi. It create and prepare the differents environments (jobs) and execute the command on every one.
 
 ## Workflow
 
@@ -21,7 +21,7 @@ TravisCi strategy or using your own with JoliCi strategy
 ### Starting services
 
 Before running test, JoliCi will try to launch services determined by your configuration file (only on TravisCi for the moment), 
-in order to have mysql, memcached, elasticsearch, .... services available for your tests.
+in order to have mysql, memcached, elasticsearch... services available for your tests.
 
 Each service will start from a clean state, data is not keeped.
 

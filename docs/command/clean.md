@@ -11,7 +11,7 @@ to not overflow your hard drive.
 php jolici.phar clean
 ```
 
-THe default command will clean all images, containers and build directories except for the last one, in the current project directory.
+The default command will clean all images, containers and build directories except for the last one, in the current project directory.
 
 ## Options
 

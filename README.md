@@ -1,7 +1,7 @@
 # JoliCi
 
 JoliCi is a free and open source Continuous Integration _Client_ written in PHP (5.4 minimum) and powered by Docker (please use a recent version). It has been written to be compliant 
-with existent Ci services like Travis-Ci and not create a new normalization. ([Remove that smile, i know what you're thinking.](http://xkcd.com/927/))
+with existent Ci services like Travis-Ci and not create a new standard. ([Remove that smile, I KNOW what you're thinking.](http://xkcd.com/927/))
 
 **This project is still in beta, there may be bugs and missing features**
 
@@ -32,7 +32,7 @@ php jolici.phar run -v
 ## Ci supported
 
 * Travis-Ci
-* [...][CONTRIBUTING.md)
+* [...](CONTRIBUTING.md)
 
 ## I want to read more
 
