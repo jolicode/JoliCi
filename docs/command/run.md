@@ -25,6 +25,21 @@ in order to have mysql, memcached, elasticsearch... services available for your 
 
 Each service will start from a clean state, data is not keeped.
 
+For the moment, services are not host in the test container but run in a separate container.
+To use them you need to set the correct host name for the service on your different configuration files.
+
+The hostname for each service is the same as the service name, so i.e. connecting to mysql can be done like that in 
+your test container : 
+
+```
+mysql -u travis -h mysql
+```
+
+Also be aware that services are only available during the script execution, any action using a service before the script 
+will fail (like creating the schema in the install part).
+
+Elimination of this two downsides are currently the focus for the next releases.
+
 ### Running test
 
 Once the environment is ready, JoliCi will run your test command on it and display the output directly on your console.
