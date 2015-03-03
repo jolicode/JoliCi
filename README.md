@@ -11,10 +11,10 @@ with existent Ci services like Travis-Ci and not create a new standard. ([Remove
 
 [Have a .travis.yml in your project](http://docs.travis-ci.com/user/getting-started/#Step-three%3A-Add-.travis.yml-file-to-your-repository)
 
-At this location [download last version of jolici](http://jolici.jolicode.com/jolici.phar) and run it:
+[Download the last version of jolici](https://github.com/jolicode/JoliCi/releases) and run it, i.e. for v0.3.0:
 
 ```bash
-wget http://jolici.jolicode.com/jolici.phar
+wget https://github.com/jolicode/JoliCi/releases/download/v0.3.0/jolici.phar
 php jolici.phar run
 ```
 
