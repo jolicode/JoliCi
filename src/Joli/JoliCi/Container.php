@@ -18,6 +18,8 @@ use TwigGenerator\Builder\Generator;
 
 class Container
 {
+    private $docker;
+
     /**
      * Strategy based on the ".travis.yml" file
      *
@@ -109,7 +111,11 @@ class Container
 
     public function getDocker()
     {
-        return new Docker(DockerClient::createWithEnv());
+        if (!$this->docker) {
+            $this->docker = new Docker(DockerClient::createWithEnv());
+        }
+
+        return $this->docker;
     }
 
     public function getExecutor($cache = true, $verbose = false, $timeout = 600)
