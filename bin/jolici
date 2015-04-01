@@ -24,5 +24,6 @@ $application = new Application('jolici', $version);
 
 $application->add(new RunCommand());
 $application->add(new CleanCommand());
+$application->add(new \Joli\JoliCi\Command\UpdateImageCommand());
 
 $application->run();
