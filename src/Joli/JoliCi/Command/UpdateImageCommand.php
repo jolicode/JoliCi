@@ -16,7 +16,7 @@ class UpdateImageCommand extends Command
      */
     protected function configure()
     {
-        $this->setName('image-update');
+        $this->setName('images-update');
         $this->setDescription('Update docker images used to build test environnement');
     }
 
@@ -31,8 +31,9 @@ class UpdateImageCommand extends Command
 
         foreach ($docker->getImageManager()->findAll() as $image) {
             if (preg_match('#^jolicode/(.+?)$#', $image->getRepository())) {
+                $output->writeln(sprintf("Update %s image", $image->getRepository()));
                 $docker->getImageManager()->pull($image->getRepository(), 'latest', $logger->getBuildCallback());
             }
         }
     }
-} 
+}

@@ -40,6 +40,7 @@ php jolici.phar run -v
 * Usage
     * [The run command](docs/command/run.md)
     * [The clean command](docs/command/clean.md)
+    * [The images-update command](docs/command/updates-image.md)
 * Strategies (a.k.a. how to create a build from a configuration file)
     * [Travis-Ci](docs/strategies/TravisCiStrategy.md)
     * [JoliCi](docs/strategies/JoliCiStrategy.md)
