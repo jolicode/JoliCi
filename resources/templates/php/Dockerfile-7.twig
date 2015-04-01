@@ -2,9 +2,9 @@
 
 {% block env %}
 {{ parent() }}
-ENV TRAVIS_PHP_VERSION php5.4
+ENV TRAVIS_PHP_VERSION php7.0-dev
 {% endblock %}
 
 {% block from %}
-FROM jolicode/php54:latest
+FROM jolicode/php-master:latest
 {% endblock %}
