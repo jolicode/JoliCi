@@ -60,7 +60,7 @@ class LoggerCallback
         $message = "";
 
         if (isset($output['error'])) {
-            $this->logger->error(sprintf("Error when creating job: %s", $output['error']), array('static' => false, 'static-id' => null));
+            $this->logger->error(sprintf("Error when creating job: %s\n", $output['error']), array('static' => false, 'static-id' => null));
             return;
         }
 
@@ -74,6 +74,11 @@ class LoggerCallback
             if (isset($output['progress'])) {
                 $message .= " " . $output['progress'];
             }
+        }
+
+        // Force new line
+        if (!isset($output['id']) && !preg_match('#\n#', $message)) {
+            $message .= "\n";
         }
 
         $this->logger->debug($message, array(

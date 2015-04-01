@@ -16,6 +16,8 @@ class SimpleFormatter implements FormatterInterface
 {
     private $static = array();
 
+    private $lineNumber = 0;
+
     /*
      * (non-PHPdoc) @see \Monolog\Formatter\FormatterInterface::format()
      */
@@ -34,13 +36,13 @@ class SimpleFormatter implements FormatterInterface
 
             if (!isset($this->static[$id])) {
                 $this->static[$id] = array(
-                    'current_line' => count($this->static),
+                    'current_line' => $this->lineNumber,
                     'message'      => $message,
                 );
 
                 $message = sprintf("%s\n", $message);
             } else {
-                $diff                         = (count($this->static) - $this->static[$id]['current_line']);
+                $diff                         = ($this->lineNumber - $this->static[$id]['current_line']);
                 $lastMessage                  = $this->static[$id]['message'];
                 $this->static[$id]['message'] = $message;
 
@@ -51,6 +53,10 @@ class SimpleFormatter implements FormatterInterface
 
                 $message = sprintf("\x0D\x1B[%sA%s\x1B[%sB\x0D", $diff, $message, $diff);
             }
+        }
+
+        if (preg_match('#\n#', $message)) {
+            $this->lineNumber++;
         }
 
         return $message;
