@@ -11,6 +11,8 @@
 namespace Joli\JoliCi\Command;
 
 use Joli\JoliCi\Container;
+use Joli\JoliNotif\Notification;
+use Joli\JoliNotif\NotifierFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,6 +32,7 @@ class RunCommand extends Command
         $this->addOption('keep', 'k', InputOption::VALUE_OPTIONAL, "Number of images / containers / directories per build to keep when cleaning at the end of run", 1);
         $this->addOption('no-cache', null, InputOption::VALUE_NONE, "Do not use cache of docker");
         $this->addOption('timeout', null, InputOption::VALUE_OPTIONAL, "Timeout for docker client in seconds (default to 5 minutes)", "300");
+        $this->addOption('notify', null, InputOption::VALUE_NONE, "Show desktop notifications when a build is finished");
         $this->addArgument('cmd', InputArgument::OPTIONAL, "Override test command");
     }
 
@@ -43,6 +46,7 @@ class RunCommand extends Command
         $strategy   = $container->getChainStrategy();
         $executor   = $container->getExecutor(!$input->getOption('no-cache'), $verbose, $input->getOption('timeout'));
         $serviceManager = $container->getServiceManager($verbose);
+        $notifier   = NotifierFactory::create();
 
         $output->writeln("<info>Creating builds...</info>");
 
@@ -58,7 +62,17 @@ class RunCommand extends Command
 
                 $serviceManager->start($job);
                 $strategy->prepareJob($job);
-                $exitCode += $executor->test($job, $input->getArgument('cmd')) == 0 ? 0 : 1;
+
+                $success  = $executor->test($job, $input->getArgument('cmd'));
+                $exitCode += $success == 0 ? 0 : 1;
+
+                if ($input->getOption('notify')) {
+                    $notification = new Notification();
+                    $notification->setBody(sprintf('Test results for %s on %s', $container->getNaming()->getProjectName($input->getOption('project-path')), $job->getDescription()));
+                    $notification->setTitle($success == 0 ? 'Tests passed' : 'Tests failed');
+
+                    $notifier->send($notification);
+                }
 
                 $serviceManager->stop($job);
             }

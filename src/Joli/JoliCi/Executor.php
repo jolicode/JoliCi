@@ -75,9 +75,7 @@ class Executor
     {
         $exitCode = 1;
 
-        // 2 Create image for build
         if (false !== $this->create($build)) {
-            // 3 Run test if build has created an image
             $exitCode = $this->run($build, $command);
         }
 
