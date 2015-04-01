@@ -38,6 +38,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'before_script'  => array(),
             'script'         => array('phpunit'),
             'env'            => array(),
+            'default_versions' => array('5.6')
         ),
         'ruby' => array(
             'before_install' => array(),
@@ -45,6 +46,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'before_script'  => array(),
             'script'         => array('bundle exec rake'),
             'env'            => array(),
+            'default_versions' => array('2.1.0')
         ),
         'node_js' => array(
             'before_install' => array(),
@@ -52,6 +54,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
             'before_script'  => array(),
             'script'         => array('npm test'),
             'env'            => array(),
+            'default_versions' => array('0.10')
         ),
     );
 
@@ -262,13 +265,18 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
      */
     protected function createMatrix($config)
     {
-        $language         = isset($config['language']) ? $config['language'] : 'ruby';
+        $language = isset($config['language']) ? $config['language'] : 'ruby';
+
+        if (!isset($this->defaults[$language])) {
+            throw new \Exception(sprintf('Language %s not supported', $language));
+        }
+
         $versionKey       = isset($this->languageVersionKeyMapping[$language]) ? $this->languageVersionKeyMapping[$language] : $language;
         $environmentLines = $this->getConfigValue($config, $language, "env");
         $environnements   = array();
         $globalEnv        = array();
         $matrixEnv        = $environmentLines;
-        $versions         = $config[$versionKey];
+        $versions         = isset($config[$versionKey]) ? $config[$versionKey] : $this->defaults[$language]['default_versions'];
 
         foreach ($versions as $key => $version) {
             if (!$this->isLanguageVersionSupported($language, $version)) {
