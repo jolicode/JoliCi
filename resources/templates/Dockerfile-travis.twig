@@ -2,7 +2,7 @@
 
 {% block env %}
 {% for key,value in global_env %}
-ENV {{ key }} {{ value }}
+ENV {{ key }}={{ value }}
 {% endfor %}
 
 {% for key,value in env %}
