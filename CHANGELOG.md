@@ -1,5 +1,14 @@
 ## Change Log
 
+### v0.3.1 (2015/04/02)
+
+- Add [images-update command](docs/command/updates-image.md)
+- Add php7 support
+- Fix quoted environnement variable #52
+- Assumed default versions for each language #51
+- Add desktop notifications
+- Fix output of versbose mode with new lines
+
 ### v0.3.0 (2015/02/25)
 
 - Better stability with updated docker-php library and error management

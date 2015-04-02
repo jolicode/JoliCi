@@ -11,10 +11,10 @@ with existent Ci services like Travis-Ci and not create a new standard. ([Remove
 
 [Have a .travis.yml in your project](http://docs.travis-ci.com/user/getting-started/#Step-three%3A-Add-.travis.yml-file-to-your-repository)
 
-[Download the last version of jolici](https://github.com/jolicode/JoliCi/releases) and run it, i.e. for v0.3.0:
+[Download the last version of jolici](https://github.com/jolicode/JoliCi/releases) and run it, i.e. for v0.3.1:
 
 ```bash
-wget https://github.com/jolicode/JoliCi/releases/download/v0.3.0/jolici.phar
+wget https://github.com/jolicode/JoliCi/releases/download/v0.3.1/jolici.phar
 php jolici.phar run
 ```
 
@@ -25,7 +25,6 @@ First run can be quite long since it has to build everything from the beginning.
 If you want to see what happens behind this black box:
 
 ```bash
-wget http://jolici.jolicode.com/jolici.phar
 php jolici.phar run -v
 ```
 

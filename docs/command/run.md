@@ -75,6 +75,7 @@ Here is a list of options you can pass to the clean command:
 * `--keep NUMBER` / `-k NUMBER`: How many versions (NUMBER) of images, containers and / or build directories should be clean after running test (default to 1)
 * `--no-cache`: Use this option if you don't want to use the cache from the last build
 * `--timeout TIMEOUT` / `-t TIMEOUT`: This is the timeout, in seconds, for the run command, it allows to aborting test if a command hangs up forever (default to 5 minutes)
+* `--notify`: Use this option to display desktop notifications for each job
 
 ## Overriding test command
 
