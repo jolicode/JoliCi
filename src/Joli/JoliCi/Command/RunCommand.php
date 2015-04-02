@@ -81,7 +81,9 @@ class RunCommand extends Command
             if (isset($job)) {
                 $serviceManager->stop($job);
             }
-            // We do not deal with exception (Console Component do it well), we just catch it to allow cleaner to be runned even if one of the build failed hard
+            // We do not deal with exception (Console Component do it well),
+            // we just catch it to allow cleaner to be runned even if one of the build failed hard
+            // Simulation of a finally for php < 5.6 :-°
         }
 
         $container->getVacuum()->clean($input->getOption("project-path"), $input->getOption("keep"));
