@@ -4,15 +4,15 @@
 
 ### Download
 
-At your choice:
+[Download the last version of jolici](https://github.com/jolicode/JoliCi/releases), i.e. for v0.3.1:
 
 ```bash
-curl http://jolici.jolicode.com/jolici.phar -o /usr/local/bin/jolici
+curl https://github.com/jolicode/JoliCi/releases/download/v0.3.1/jolici.phar -o /usr/local/bin/jolici
 chmod +x /usr/local/bin/jolici
 ```
 
 ```bash
-wget http://jolici.jolicode.com/jolici.phar -O /usr/local/bin/jolici
+wget https://github.com/jolicode/JoliCi/releases/download/v0.3.1/jolici.phar -O /usr/local/bin/jolici
 chmod +x /usr/local/bin/jolici
 ```
 
