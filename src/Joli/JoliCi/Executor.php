@@ -113,10 +113,14 @@ class Executor
     public function run(Job $build, $command = null)
     {
         $image     = $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
-        $config    = array('HostConfig' => array( 'Links' => array()));
+        $config    = array('HostConfig' => array());
 
         foreach ($build->getServices() as $service) {
             if ($service->getContainer()) {
+                if (!isset($config['HostConfig']['Links'])) {
+                    $config['HostConfig']['Links'] = [];
+                }
+
                 $config['HostConfig']['Links'][] = sprintf('%s:%s', $service->getContainer()->getRuntimeInformations()['Name'], $service->getName());
             }
         }
