@@ -60,7 +60,7 @@ files related to an environment at the exception of the last run so we can use h
 php jolici.phar run
 ```
 
-THe default command will run test for each environments created, this will only output the result of the test command. If you 
+The default command will run test for each environments created, this will only output the result of the test command. If you 
 want to see the output of the build process (like TravisCi) you can run this command with a verbose option:
 
 ```bash
