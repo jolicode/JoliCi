@@ -113,16 +113,12 @@ class Executor
     public function run(Job $build, $command = null)
     {
         $image     = $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
-        $config    = array('HostConfig' => array('Links' => []));
+        $config    = array('HostConfig' => array( 'Links' => array()));
 
         foreach ($build->getServices() as $service) {
             if ($service->getContainer()) {
                 $config['HostConfig']['Links'][] = sprintf('%s:%s', $service->getContainer()->getRuntimeInformations()['Name'], $service->getName());
             }
-        }
-
-        if (empty($config['HostConfig']['Links'])) {
-            unset($config['HostConfig']['Links']);
         }
 
         $container = new DockerContainer($config);
@@ -138,7 +134,7 @@ class Executor
 
         $container->setImage($image);
 
-        $this->docker->getContainerManager()->run($container, $this->logger->getRunCallback(), [], false, $this->timeout);
+        $this->docker->getContainerManager()->run($container, $this->logger->getRunCallback(), array(), false, $this->timeout);
 
         return $container->getExitCode();
     }
