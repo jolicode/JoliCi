@@ -31,22 +31,25 @@ class JobTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($descriptionMock, $jobMock->getDescription());
         $this->assertSame($createdMock, $jobMock->getCreated());
         $this->assertSame($servicesMock, $jobMock->getServices());
+
+        return $jobMock;
     }
 
-    public function testAddAndGetServices()
+    /**
+     * @param Job $jobMock
+     * @depends testConstructInitialisesAllTheFields
+     */
+    public function testAddAndGetServices($jobMock)
     {
-        $jobMock =
-            $this->getMockBuilder('Joli\JoliCI\Job')
-                 ->disableOriginalConstructor()
-                 ->setMethods(null)
-                 ->getMock();
-
-        $serviceMock = new Service('test', 'test', 'test');
-
-        $this->assertEmpty($jobMock->getServices());
+        $serviceMock     = new Service('test', 'test', 'test');
+        $currentServices = $jobMock->getServices();
 
         $jobMock->addService($serviceMock);
-        $this->assertEquals(array($serviceMock), $jobMock->getServices());
+
+        $this->assertEquals(
+            array_merge($currentServices, array($serviceMock)),
+            $jobMock->getServices()
+        );
     }
 
     public function testToStringReturnsTheNameOfTheJob()

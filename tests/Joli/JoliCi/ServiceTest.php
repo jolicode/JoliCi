@@ -17,19 +17,19 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($repositoryMock, $serviceMock->getRepository());
         $this->assertSame($tagMock, $serviceMock->getTag());
         $this->assertSame($configMock, $serviceMock->getConfig());
+
+        return $serviceMock;
     }
 
-    public function testSetAndGetContainer()
+    /**
+     * @param Service $serviceMock
+     * @depends testConstructInitialisesAllTheFields
+     */
+    public function testSetAndGetContainer($serviceMock)
     {
         $dockerContainerMock =
             $this->getMockBuilder('Docker\Container')
                  ->setMethods(null)
-                 ->getMock();
-
-        $serviceMock =
-            $this->getMockBuilder('Joli\JoliCI\Service')
-                 ->setMethods(null)
-                 ->disableOriginalConstructor()
                  ->getMock();
 
         $serviceMock->setContainer($dockerContainerMock);
