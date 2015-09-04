@@ -4,6 +4,22 @@ namespace Joli\JoliCi;
 
 class MatrixTest extends \PHPUnit_Framework_TestCase
 {
+    public function testSetDimensionWillUseDefaultValuesIfEmptyProvided()
+    {
+        $matrixMock = new Matrix();
+
+        $matrixMock->setDimension('test', array());
+
+        $this->assertAttributeContains(array(null), 'dimensions', $matrixMock);
+    }
+
+    public function testComputeWillReturnEmptyIfNoDimensions()
+    {
+        $matrixMock = new Matrix();
+
+        $this->assertEquals(array(), $matrixMock->compute());
+    }
+
     public function testCompute()
     {
         $matrix = new Matrix();
