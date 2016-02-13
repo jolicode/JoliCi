@@ -290,6 +290,10 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
 
         if (isset($environmentLines['global'])) {
             foreach ($environmentLines['global'] as $environementVariable) {
+                if (is_array($environementVariable) && array_key_exists('secure', $environementVariable)) {
+                    continue;
+                }
+
                 list ($key, $value) = $this->parseEnvironementVariable($environementVariable);
                 $globalEnv = array_merge($globalEnv, array($key => $value));
             }
