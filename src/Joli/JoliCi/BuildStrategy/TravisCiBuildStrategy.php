@@ -276,7 +276,7 @@ class TravisCiBuildStrategy implements BuildStrategyInterface
         $environnements   = array();
         $globalEnv        = array();
         $matrixEnv        = $environmentLines;
-        $versions         = isset($config[$versionKey]) ? $config[$versionKey] : $this->defaults[$language]['default_versions'];
+        $versions         = (array) (isset($config[$versionKey]) ? $config[$versionKey] : $this->defaults[$language]['default_versions']);
 
         foreach ($versions as $key => $version) {
             if (!$this->isLanguageVersionSupported($language, $version)) {
