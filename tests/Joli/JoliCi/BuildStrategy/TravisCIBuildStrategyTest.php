@@ -32,11 +32,11 @@ class TravisCIBuildStrategyTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider createMatrixVersionDataProvider
      */
-    public function testCreateMatrixCanObtainVersionsFromString($version)
+    public function testCreateMatrixCanObtainVersions($versions)
     {
         $testConfig = [
             'language' => 'php',
-            'php'      => $version,
+            'php'      => $versions,
         ];
 
         $createMatrix = function ($config) {
@@ -46,7 +46,7 @@ class TravisCIBuildStrategyTest extends \PHPUnit_Framework_TestCase
 
         $matrix = $createMatrix($testConfig);
 
-        $this->assertAttributeContains([$version], 'dimensions', $matrix);
+        $this->assertAttributeContains((array) $versions, 'dimensions', $matrix);
     }
 
     /**
@@ -59,6 +59,8 @@ class TravisCIBuildStrategyTest extends \PHPUnit_Framework_TestCase
             [5.5],
             // Test with string
             ['5.5'],
+            // Test with list
+            [['5.5', '5.6', '7']]
         ];
     }
 }
