@@ -28,4 +28,39 @@ class TravisCIBuildStrategyTest extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse($support);
     }
+
+    /**
+     * @dataProvider createMatrixVersionDataProvider
+     */
+    public function testCreateMatrixCanObtainVersions($versions)
+    {
+        $testConfig = [
+            'language' => 'php',
+            'php'      => $versions,
+        ];
+
+        $createMatrix = function ($config) {
+            return $this->createMatrix($config);
+        };
+        $createMatrix = $createMatrix->bindTo($this->strategy, $this->strategy);
+
+        $matrix = $createMatrix($testConfig);
+
+        $this->assertAttributeContains((array) $versions, 'dimensions', $matrix);
+    }
+
+    /**
+     * @return array
+     */
+    public function createMatrixVersionDataProvider()
+    {
+        return [
+            // Test with float
+            [5.5],
+            // Test with string
+            ['5.5'],
+            // Test with list
+            [['5.5', '5.6', '7']]
+        ];
+    }
 }
