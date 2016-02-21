@@ -5,6 +5,7 @@ FROM jolicode/base:latest
 {% block content %}
 {% endblock %}
 
+LABEL com.jolici.image="true"
 ENV WORKDIR $HOME/project
 ADD . $WORKDIR
 WORKDIR $HOME/project

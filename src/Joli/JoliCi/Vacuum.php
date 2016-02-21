@@ -2,6 +2,7 @@
 
 namespace Joli\JoliCi;
 
+use Docker\API\Model\ImageItem;
 use Docker\Docker;
 use Docker\Image;
 use Joli\JoliCi\BuildStrategy\BuildStrategyInterface;
@@ -92,26 +93,29 @@ class Vacuum
             if (isset($job->getParameters()['image'])) {
                 $images[] = $job->getParameters()['image'];
             } else {
-                $images[] = $this->docker->getImageManager()->inspect(new Image($job->getRepository(), $job->getTag()));
+                $images[] = sprintf('%s:%s', $job->getRepository(), $job->getTag());
             }
         }
 
-        foreach ($this->docker->getContainerManager()->findAll(array('all' => 1)) as $container) {
-            $id = $container->getConfig()['Image'];
+        foreach ($this->docker->getContainerManager()->findAll(['all' => 1]) as $container) {
+            $imageName = $container->getImage();
 
             foreach ($images as $image) {
-                if ($image->__toString() == $id) {
+                if ($image == $imageName) {
                     $containers[] = $container;
                 }
 
-                if (preg_match('#^'.$id.'#', $image->getId())) {
+                if (preg_match('#^'.$imageName.'#', $image->getId())) {
                     $containers[] = $container;
                 }
             }
         }
 
         foreach ($containers as $container) {
-            $this->docker->getContainerManager()->remove($container, true);
+            $this->docker->getContainerManager()->remove($container->getId(), [
+                'v' => true,
+                'force' => true
+            ]);
         }
     }
 
@@ -124,7 +128,9 @@ class Vacuum
     public function cleanImages($jobs = array(), $force = false)
     {
         foreach ($jobs as $job) {
-            $this->docker->getImageManager()->remove(new Image($job->getRepository(), $job->getTag()), $force);
+            $this->docker->getImageManager()->remove(sprintf('%s:%s', $job->getRepository(), $job->getTag()), [
+                'force' => $force
+            ]);
         }
     }
 
@@ -182,11 +188,13 @@ class Vacuum
     {
         $jobs            = array();
         $project         = $this->naming->getProjectName($projectPath);
-        $repositoryRegex = sprintf('#^%s_([a-z]+?)/%s$#', Job::BASE_NAME, $project);
+        $repositoryRegex = sprintf('#^%s_([a-z]+?)/%s:\d+-\d+$#', Job::BASE_NAME, $project);
 
         foreach ($this->docker->getImageManager()->findAll() as $image) {
-            if (preg_match($repositoryRegex, $image->getRepository(), $matches)) {
-                $jobs[] = $this->getJobFromImage($image, $matches[1], $project);
+            foreach ($image->getRepoTags() as $name) {
+                if (preg_match($repositoryRegex, $name, $matches)) {
+                    $jobs[] = $this->getJobFromImage($image, $name, $matches[1], $project);
+                }
             }
         }
 
@@ -196,15 +204,16 @@ class Vacuum
     /**
      * Create a job from a docker image
      *
-     * @param Image  $image
-     * @param string $strategy
-     * @param string $project
+     * @param ImageItem $image
+     * @param string    $strategy
+     * @param string    $project
      *
      * @return \Joli\JoliCi\Job
      */
-    protected function getJobFromImage(Image $image, $strategy, $project)
+    protected function getJobFromImage(ImageItem $image, $imageName, $strategy, $project)
     {
-        list($uniq, $timestamp)     = explode('-', $image->getTag());
+        $tag = explode(':', $imageName)[1];
+        list($uniq, $timestamp)     = explode('-', $tag);
 
         return new Job($project, $strategy, $uniq, array('image' => $image), "", \DateTime::createFromFormat('U', $timestamp));
     }

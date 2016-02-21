@@ -2,24 +2,41 @@
 
 namespace Joli\JoliCi;
 
+use Docker\API\Model\BuildInfo;
 use Psr\Log\LoggerInterface;
 
 class LoggerCallback
 {
+    /**
+     * @var \Closure
+     */
     private $buildCallback;
 
-    private $runCallback;
+    /**
+     * @var \Closure
+     */
+    private $runStdoutCallback;
 
+    /**
+     * @var \Closure
+     */
+    private $runStderrCallback;
+
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     public function __construct(LoggerInterface $logger)
     {
-        $build = new \ReflectionMethod($this, 'buildCallback');
-        $run   = new \ReflectionMethod($this, 'runCallback');
+        $build     = new \ReflectionMethod($this, 'buildCallback');
+        $runStdout = new \ReflectionMethod($this, 'runStdoutCallback');
+        $runStderr = new \ReflectionMethod($this, 'runStderrCallback');
 
         $this->buildCallback = $build->getClosure($this);
-        $this->runCallback   = $run->getClosure($this);
-        $this->logger        = $logger;
+        $this->runStdoutCallback = $runStdout->getClosure($this);
+        $this->runStderrCallback = $runStderr->getClosure($this);
+        $this->logger = $logger;
     }
 
     /**
@@ -33,13 +50,23 @@ class LoggerCallback
     }
 
     /**
-     * Get the run callback for docker
+     * Get the run stdout callback for docker
      *
      * @return callable
      */
-    public function getRunCallback()
+    public function getRunStdoutCallback()
     {
-        return $this->runCallback;
+        return $this->runStdoutCallback;
+    }
+
+    /**
+     * Get the run stderr callback for docker
+     *
+     * @return callable
+     */
+    public function getRunStderrCallback()
+    {
+        return $this->runStderrCallback;
     }
 
     /**
@@ -53,52 +80,57 @@ class LoggerCallback
     /**
      * The build callback when creating a image, useful to see what happens during building
      *
-     * @param string $output An encoded json string from docker daemon
+     * @param BuildInfo $output An encoded json string from docker daemon
      */
-    private function buildCallback($output)
+    private function buildCallback(BuildInfo $output)
     {
         $message = "";
 
-        if (isset($output['error'])) {
-            $this->logger->error(sprintf("Error when creating job: %s\n", $output['error']), array('static' => false, 'static-id' => null));
+        if ($output->getError()) {
+            $this->logger->error(sprintf("Error when creating job: %s\n", $output->getError()), array('static' => false, 'static-id' => null));
             return;
         }
 
-        if (isset($output['stream'])) {
-            $message = $output['stream'];
+        if ($output->getStream()) {
+            $message = $output->getStream();
         }
 
-        if (isset($output['status'])) {
-            $message = $output['status'];
+        if ($output->getStatus()) {
+            $message = $output->getStatus();
 
-            if (isset($output['progress'])) {
-                $message .= " " . $output['progress'];
+            if ($output->getProgress()) {
+                $message .= " " . $output->getProgress();
             }
         }
 
         // Force new line
-        if (!isset($output['id']) && !preg_match('#\n#', $message)) {
+        if (!$output->getId() && !preg_match('#\n#', $message)) {
             $message .= "\n";
         }
 
         $this->logger->debug($message, array(
-            'static' => isset($output['id']),
-            'static-id' => isset($output['id']) ? $output['id'] : null,
+            'static' => $output->getId() !== null,
+            'static-id' => $output->getId(),
         ));
     }
 
     /**
-     * Run callback to catch logs of test running
+     * Run callback to catch stdout logs of test running
      *
-     * @param string $output Output from run
-     * @param int $type Type of output (2 = Error, 1 = Stdin, 0 = Stdout)
+     * @param string $output Output from run (stdout)
      */
-    private function runCallback($output, $type)
+    private function runStdoutCallback($output)
     {
-        if ($type === 2) {
-            $this->logger->error($output);
-        } else {
-            $this->logger->info($output);
-        }
+        $this->logger->info($output);
+    }
+
+    /**
+     * Run callback to catch stderr logs of test running
+     *
+     * @param string $output Output from run (stderr)
+     */
+    private function runStderrCallback($output)
+    {
+        $this->logger->error($output);
     }
 }

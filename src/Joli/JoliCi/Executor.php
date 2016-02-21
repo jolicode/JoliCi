@@ -10,11 +10,15 @@
 
 namespace Joli\JoliCi;
 
+use Docker\API\Model\BuildInfo;
+use Docker\API\Model\ContainerConfig;
+use Docker\API\Model\HostConfig;
 use Docker\Docker;
 use Docker\Context\Context;
-use Docker\Exception\ImageNotFoundException;
-use Docker\Image;
-use Docker\Container as DockerContainer;
+use Docker\Manager\ContainerManager;
+use Docker\Manager\ImageManager;
+use Docker\Stream\BuildStream;
+use Http\Client\Plugin\Exception\ClientErrorException;
 use Monolog\Logger;
 
 class Executor
@@ -85,61 +89,90 @@ class Executor
     /**
      * Create a build
      *
-     * @param Job $build Build used to create image
+     * @param Job $job Build used to create image
      *
-     * @return Image|boolean Return the image created if sucessful or false otherwise
+     * @return \Docker\API\Model\Image|boolean Return the image created if successful or false otherwise
      */
-    public function create(Job $build)
+    public function create(Job $job)
     {
-        $context  = new Context($this->buildPath . DIRECTORY_SEPARATOR . $build->getDirectory());
-        $this->docker->build($context, $build->getName(), $this->logger->getBuildCallback(), $this->quietBuild, $this->usecache, true);
-        $this->logger->clearStatic();
+        $context  = new Context($this->buildPath . DIRECTORY_SEPARATOR . $job->getDirectory());
+
+        $buildStream = $this->docker->getImageManager()->build($context->toStream(), [
+            't' => $job->getName(),
+            'q' => $this->quietBuild,
+            'nocache' => !$this->usecache
+        ], ImageManager::FETCH_STREAM);
+
+        $buildStream->onFrame($this->logger->getBuildCallback());
+        $buildStream->wait();
 
         try {
-            return $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
-        } catch (ImageNotFoundException $e) {
-            return false;
+            return $this->docker->getImageManager()->find($job->getName());
+        } catch (ClientErrorException $e) {
+            if ($e->getResponse()->getStatusCode() == 404) {
+                return false;
+            }
+
+            throw $e;
         }
     }
 
     /**
      * Run a build (it's suppose the image exist in docker
      *
-     * @param Job $build Build to run
+     * @param Job $job Build to run
      * @param string|array $command Command to use when run the build (null, by default, will use the command registered to the image)
      *
      * @return integer The exit code of the command run inside (0 = success, otherwise it has failed)
      */
-    public function run(Job $build, $command = null)
+    public function run(Job $job, $command)
     {
-        $image     = $this->docker->getImageManager()->find($build->getRepository(), $build->getTag());
-        $config    = array('HostConfig' => array());
+        if (is_string($command)) {
+            $command = ['/bin/bash', '-c', $command];
+        }
 
-        foreach ($build->getServices() as $service) {
+        $image = $this->docker->getImageManager()->find($job->getName());
+
+        $hostConfig = new HostConfig();
+
+        $config = new ContainerConfig();
+        $config->setCmd($command);
+        $config->setImage($image->getId());
+        $config->setHostConfig($hostConfig);
+        $config->setLabels(new \ArrayObject([
+            'com.jolici.container=true'
+        ]));
+        $config->setAttachStderr(true);
+        $config->setAttachStdout(true);
+
+        $links = [];
+
+        foreach ($job->getServices() as $service) {
             if ($service->getContainer()) {
-                if (!isset($config['HostConfig']['Links'])) {
-                    $config['HostConfig']['Links'] = [];
-                }
+                $serviceContainer = $this->docker->getContainerManager()->find($service->getContainer());
 
-                $config['HostConfig']['Links'][] = sprintf('%s:%s', $service->getContainer()->getRuntimeInformations()['Name'], $service->getName());
+                $links[] = sprintf('%s:%s', $serviceContainer->getName(), $service->getName());
             }
         }
 
-        $container = new DockerContainer($config);
+        $hostConfig->setLinks($links);
 
-        if (is_string($command)) {
-            $command = array('/bin/bash', '-c', $command);
-        }
+        $containerCreateResult = $this->docker->getContainerManager()->create($config);
+        $attachStream = $this->docker->getContainerManager()->attach($containerCreateResult->getId(), [
+            'stream' => true,
+            'stdout' => true,
+            'stderr' => true,
+        ], ContainerManager::FETCH_STREAM);
 
-        if (is_array($command)) {
-            $container->setCmd($command);
-        }
+        $attachStream->onStdout($this->logger->getRunStdoutCallback());
+        $attachStream->onStderr($this->logger->getRunStderrCallback());
 
+        $this->docker->getContainerManager()->start($containerCreateResult->getId());
 
-        $container->setImage($image);
+        $attachStream->wait();
 
-        $this->docker->getContainerManager()->run($container, $this->logger->getRunCallback(), array(), false, $this->timeout);
+        $containerWait = $this->docker->getContainerManager()->wait($containerCreateResult->getId());
 
-        return $container->getExitCode();
+        return $containerWait->getStatusCode();
     }
 }

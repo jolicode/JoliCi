@@ -36,7 +36,7 @@ class Service
     private $config;
 
     /**
-     * @var \Docker\Container Container used for this service
+     * @var string Container id used for this service
      */
     private $container;
 
@@ -81,7 +81,7 @@ class Service
     }
 
     /**
-     * @return DockerContainer
+     * @return string The container id
      */
     public function getContainer()
     {
@@ -89,9 +89,9 @@ class Service
     }
 
     /**
-     * @param DockerContainer $container
+     * @param string $container The container id
      */
-    public function setContainer(DockerContainer $container)
+    public function setContainer($container)
     {
         $this->container = $container;
     }

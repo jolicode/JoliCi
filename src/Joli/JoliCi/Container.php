@@ -3,7 +3,6 @@
 namespace Joli\JoliCi;
 
 use Docker\Docker;
-use Docker\Http\DockerClient;
 use Joli\JoliCi\BuildStrategy\ChainBuildStrategy;
 use Joli\JoliCi\Filesystem\Filesystem;
 use Joli\JoliCi\Log\SimpleFormatter;
@@ -112,7 +111,7 @@ class Container
     public function getDocker()
     {
         if (!$this->docker) {
-            $this->docker = new Docker(DockerClient::createWithEnv());
+            $this->docker = new Docker();
         }
 
         return $this->docker;
